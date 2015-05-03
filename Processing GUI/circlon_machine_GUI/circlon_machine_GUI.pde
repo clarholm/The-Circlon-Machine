@@ -1,11 +1,14 @@
-
-
-
 import controlP5.*;
 import com.dhchoi.CountdownTimer;
 import com.dhchoi.CountdownTimerService;
+import processing.serial.*;
 
 ControlP5 cp5;
+
+//Serial communications
+Serial myPort;
+boolean firstContact = false;
+String val;
 
 //GUI Variables
 int windowSizeWidth;
@@ -72,8 +75,14 @@ String runMotors; //contains speed parameters
 
 void setup() {
   
+  //Create serial communications port
+  println(Serial.list());
+  String portName = Serial.list()[1];
+  myPort = new Serial(this, portName, 9600);
+  myPort.bufferUntil('\n');
+  
   //Setup window based on screensize
-  size(displayWidth-100, displayHeight-100, P2D);
+  size(displayWidth-100, displayHeight-100);
   //Set background clour to white.
   background(255, 255, 255);
   windowSizeWidth = displayWidth-100;
@@ -247,14 +256,53 @@ motor2CountdownTimer = CountdownTimerService.getNewCountdownTimer(this).configur
 }
 
 void draw() {
+  
+  
 //debug start
 motor1CurrentSpeed = motor1MaxSpeed;
 motor2CurrentSpeed = motor2MaxSpeed;
 //debug end
 checkToggleValues();
 updateScreen();
-runMotors();
+//runMotors();
+
+
 }
+
+void serialEvent( Serial myPort) {
+//put the incoming data into a String - 
+//the '\n' is our end delimiter indicating the end of a complete packet
+val = myPort.readStringUntil('\n');
+//make sure our data isn't empty before continuing
+if (val != null) {
+  //trim whitespace and formatting characters (like carriage return)
+  val = trim(val);
+  println(val);
+
+  //look for our 'A' string to start the handshake
+  //if it's there, clear the buffer, and send a request for data
+  if (firstContact == false) {
+    if (val.equals("A")) {
+      myPort.clear();
+      firstContact = true;
+      myPort.write("A");
+      println("contact");
+    }
+  }
+  else { //if we've already established contact, keep getting and parsing data
+    println(val);
+    if (val.equals("parametersProcessed")) {
+      myPort.clear();
+      runMotors();                   //send next motor parameters
+
+    }
+
+    }
+  }
+}
+
+
+
 
 void runMotors()
 {
@@ -273,13 +321,25 @@ void runMotors()
 //  That would tell the first motor to run in no-pingpong mode with a constant
 //  speed of 800 in the direction 0 wich is counter clock wise. The second motor
 //  would also run in a non ping-pong mode with a constant speed of 1200 and clockwise.
-if (motor1CurrentState == true && motor2CurrentState == true){
+if (runMotors != ("0,"+motor1CurrentSpeed+",0,"+motor1Direction+",0,"+motor2CurrentSpeed+",0,"+motor2Direction)){
+  println("RunMotorsCurrent: " + runMotors);
+  println("RunMotorsRead:    " + ("0,"+motor1CurrentSpeed+",0,"+motor1Direction+",0,"+motor2CurrentSpeed+",0,"+motor2Direction));
+  if (motor1CurrentState == true && motor2CurrentState == true){
 runMotors = "0,"+motor1CurrentSpeed+",0,"+motor1Direction+",0,"+motor2CurrentSpeed+",0,"+motor2Direction;
+println("Before sending run motors command motorcurrentState = true");
+myPort.write(runMotors);
+println(runMotors);
+println("After sending run motors command motorcurrentState = true"); 
 }
 
-else runMotors = "0,0,0,0,0,0,0,0";
+else if (motor1CurrentState == false && motor2CurrentState == false){
+runMotors = "0,1,0,0,0,1,0,0";
+println("Before sending run motors command motorcurrentState = false");
+myPort.write(runMotors);
 println(runMotors);
-
+println("After sending run motors command motorcurrentState = false");
+}
+}
   
 }
 

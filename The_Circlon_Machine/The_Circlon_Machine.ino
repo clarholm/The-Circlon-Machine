@@ -74,7 +74,7 @@ boolean motor1PingPong = false;
 boolean motor2PingPong = false;
 boolean debug = false;
 boolean debug2 = false;
-boolean debug3 = true;
+boolean debug3 = false;
 float motorMultiplier = 0.1;
 String inputString = "";         // a string to hold incoming data
 int inputStringToInt = 0;
@@ -111,14 +111,15 @@ void setup()
      while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
+  
+  establishContact();
  Serial.println("Serial active");
 
      // reserve 200 bytes for the inputString:
   inputString.reserve(200);
   stepper1.setMaxSpeed(400);
   stepper2.setMaxSpeed(400);
-   pinMode(enableDisableMotormovementsPin, INPUT_PULLUP);
-   pinMode(enableDisableMotormovementsPin, INPUT_PULLUP);
+  pinMode(enableDisableMotormovementsPin, INPUT_PULLUP);
   pinMode(motor1ControlPin, INPUT);
   pinMode(motor2ControlPin, INPUT);
   pinMode(motor1DirectionControlPin, INPUT_PULLUP);
@@ -177,13 +178,17 @@ void loop()
     printDebug2();
     }  
       // print each of the stored fields
+      
       for(int i=0; i < min(NUMBER_OF_FIELDS, fieldIndex+1); i++)
       {
         Serial.println(values[i]);
         
         values[i] = 0; // set the values to zero, ready for the next message
       }
+      
       fieldIndex = 0;  // ready to start over
+      Serial.println("parametersProcessed");
+      delay(50);
       dataAvailable = false;
     }
   }
@@ -198,6 +203,15 @@ void loop()
   }
   else runStepper2(motor2Speed, motor2Direction);
  }
+
+void establishContact() {
+  while (Serial.available() <= 0) {
+  Serial.println("A");   // send a capital A
+  delay(300);
+  }
+}
+
+
  
 void runStepper1PingPong2(int motorSpeed, int numberOfTurns){
   currentMillis1 = millis();
@@ -207,7 +221,7 @@ void runStepper1PingPong2(int motorSpeed, int numberOfTurns){
     previousMillis1 = currentMillis1;   
     motor1LastPingPongDirection = -motor1LastPingPongDirection;
     motorSpeedWithDir1 = motor1LastPingPongDirection*motorSpeed;
-    Serial.println("PingPong1 direction change");
+    //Serial.println("PingPong1 direction change");
   }
       stepper1.setSpeed(motorSpeedWithDir1);
       stepper1.runSpeed();
