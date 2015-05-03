@@ -1,21 +1,9 @@
 
-// - First parameter is ping-pong mode off or on, in ping pong mode a motor
-//   runs for a number of turns (set by the third parameter) in one direction 
-//   and then changes direction once the number of turns is reached.
-// - Second parameter is the speed, usually I use from 600-2500
-// - Third parameter is number of turns before changing direction if ping-pong
-//   mode is active.
-// - Fourth parameter is the direction if ping-ping mode is inactive.
-// - Parameter 5-8 is for the second motor but with the same functions as 1-4
-//
-//e.g    0,800,0,0,0,1200,0,1
-//  That would tell the first motor to run in no-pingpong mode with a constant
-//  speed of 800 in the direction 0 wich is counter clock wise. The second motor
-//  would also run in a non ping-pong mode with a constant speed of 1200 and clockwise.
-
 
 
 import controlP5.*;
+import com.dhchoi.CountdownTimer;
+import com.dhchoi.CountdownTimerService;
 
 ControlP5 cp5;
 
@@ -46,21 +34,41 @@ Textlabel motor2CurrentParametersTextLabel1;
 Textlabel motor2CurrentParametersTextLabel2;
 Textlabel motor2CurrentParametersTextLabel3;
 
+Textlabel currentMotorStateLabel;
+Textlabel pauseMotorLabel;
+
+//Buttons
+Toggle motor1ChangeDirectionButton;
+boolean motor1ChangeDirectionButtonStatus;
+Toggle motor2ChangeDirectionButton;
+boolean motor2ChangeDirectionButtonStatus;
+Toggle startStopDrawing;
+Toggle pauseDrawing;
+int buttonHeight = 20;
+int startButtonHeight = 100;
+
 //Motor Control Parameters
 int motor1MinSpeed;
 int motor2MinSpeed;
 int motor1MaxSpeed;
 int motor2MaxSpeed;
-int motor1Time = 10;
-int motor2Time = 10;
+long motor1TimeUntilFinished = 10;
+long motor2TimeUntilFinished = 10;
 int motor1CurrentSpeed = 0;
 int motor2CurrentSpeed = 0;
 int motor1CurrentTime = 0;
 int motor2CurrentTime = 0;
+float motor1LastTimerValue = 0;
+float motor2LastTimerValue = 0;
 boolean motor1CurrentState;
 boolean motor2CurrentState;
 int motor1Direction = 0; //0 = counter clockwise, 1 = clockwise
 int motor2Direction = 0; //0 = counter clockwise, 1 = clockwise
+CountdownTimer motor1CountdownTimer;
+CountdownTimer motor2CountdownTimer;
+String runMotors; //contains speed parameters
+
+
 
 void setup() {
   
@@ -78,7 +86,7 @@ void setup() {
   motor1Range = cp5.addRange("Motor 1 Speed")
                // disable broadcasting since setRange and setRangeValues will trigger an event
              .setBroadcast(false) 
-             .setPosition(xOffsetLeft,yOffsetTop)
+             .setPosition(xOffsetLeft,yOffsetTop+buttonHeight+sliderHorizontalSpacing)
              .setSize(windowSizeWidth/2-xOffsetLeft-100, sliderHeight)
              .setHandleSize(sliderHandleSize)
              .setRange(600,2500)
@@ -93,7 +101,7 @@ void setup() {
   motor2Range = cp5.addRange("Motor 2 Speed")
                // disable broadcasting since setRange and setRangeValues will trigger an event
              .setBroadcast(false) 
-             .setPosition((windowSizeWidth/2+xOffsetRight), yOffsetTop)
+             .setPosition((windowSizeWidth/2+xOffsetRight), yOffsetTop+buttonHeight+sliderHorizontalSpacing)
              .setSize((windowSizeWidth/2-xOffsetRight-100), sliderHeight)
              .setHandleSize(sliderHandleSize)
              .setRange(600,2500)
@@ -106,7 +114,7 @@ void setup() {
              ;
              
   motor1TimeSlider = cp5.addSlider("Motor 1 Time")
-     .setPosition(xOffsetLeft,yOffsetTop + sliderHeight + sliderHorizontalSpacing)
+     .setPosition(xOffsetLeft,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
      .setRange(10,200)
      .setValue(30)
@@ -116,7 +124,7 @@ void setup() {
      ;
   
    motor2TimeSlider = cp5.addSlider("Motor 2 Time")
-    .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + sliderHeight + sliderHorizontalSpacing)
+    .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
     .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
     .setRange(10,200)
     .setValue(30)
@@ -128,48 +136,114 @@ void setup() {
 
   motor1CurrentParametersTextLabel1 = cp5.addTextlabel("motor1Label1")
                     .setText("Speed: " + motor1CurrentSpeed)
-                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing)
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
                     ;
                     
   motor1CurrentParametersTextLabel2 = cp5.addTextlabel("motor1Label2")
                     .setText( "Direction: " + getCurrentDirection(motor1Direction))
-                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+textLabelRowSpacing)
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
                     ;
                     
   motor1CurrentParametersTextLabel3 = cp5.addTextlabel("motor1Label3")
-                    .setText( "Time until max or min: " + (motor1Time-motor1CurrentTime) + " seconds.")
-                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+2*textLabelRowSpacing)
+                    .setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.")
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+2*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
                     ;                   
 
   motor2CurrentParametersTextLabel1 = cp5.addTextlabel("motor2Label1")
                     .setText("Speed: " + motor2CurrentSpeed)
-                    .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing)
+                    .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
                     ;
                     
   motor2CurrentParametersTextLabel2 = cp5.addTextlabel("motor2Label2")
                     .setText( "Direction: " + getCurrentDirection(motor2Direction))
-                    .setPosition(windowSizeWidth/2+xOffsetRight, yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+textLabelRowSpacing)
+                    .setPosition(windowSizeWidth/2+xOffsetRight, yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
                     ;                  
                     
                     
   motor2CurrentParametersTextLabel3 = cp5.addTextlabel("motor2Label3")
-                    .setText( "Time until max or min: " + (motor2Time-motor2CurrentTime) + " seconds.")
-                    .setPosition(windowSizeWidth/2+xOffsetRight, yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+2*textLabelRowSpacing)
+                    .setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.")
+                    .setPosition(windowSizeWidth/2+xOffsetRight, yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+2*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
                     ;
-  noStroke();
+
+
+//Toggle Switches
+//Motor Direction
+   motor1ChangeDirectionButton = cp5.addToggle("Click to change direction of motor 1")
+     .setPosition(xOffsetLeft,yOffsetTop)
+     .setSize(windowSizeWidth/2-xOffsetLeft-100,buttonHeight)
+     .setValue(0)
+     .setColorForeground(color(153, 0, 51))
+     .setColorBackground(color(255, 153, 128))
+     .setColorActive(color(153, 0, 51)) 
+     .setColorLabel(color(0,0,0))
+     ;
+
+   motor2ChangeDirectionButton = cp5.addToggle("Click to change direction of motor 2")
+     .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop)
+     .setSize(windowSizeWidth/2-xOffsetLeft-100,buttonHeight)
+     .setValue(0)
+     .setColorForeground(color(153, 0, 51))
+    .setColorBackground(color(255, 153, 128))
+    .setColorActive(color(153, 0, 51)) 
+    .setColorLabel(color(0,0,0))
+     ;
+//Motors on or off     
+   startStopDrawing = cp5.addToggle("Start/Stop motors")
+     .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
+     .setSize(windowSizeWidth/2-xOffsetLeft-100,startButtonHeight)
+     .setValue(0)
+     .setColorForeground(color(153, 0, 51))
+    .setColorBackground(color(255, 153, 128))
+    .setColorActive(color(153, 0, 51)) 
+    .setColorLabel(color(0,0,0))
+    .setLabelVisible(false)
+     ;
+   pauseDrawing = cp5.addToggle("Pause Motors")
+     .setPosition(xOffsetRight,yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
+     .setSize(windowSizeWidth/2-xOffsetLeft-100,startButtonHeight)
+     .setValue(0)
+     .setColorForeground(color(153, 0, 51))
+    .setColorBackground(color(255, 153, 128))
+    .setColorActive(color(153, 0, 51)) 
+    .setColorLabel(color(0,0,0))
+    .setLabelVisible(false)
+     ;
+     
   
+  currentMotorStateLabel = cp5.addTextlabel("currentMotorStateLabel")
+    .setText( "Start")
+    .setPosition(windowSizeWidth/2+xOffsetRight, yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing+startButtonHeight)
+    .setColorValue(color(0,0,0))
+    .setFont(createFont("Arial",25))
+                    ;
+
+  pauseMotorLabel = cp5.addTextlabel("pauseMotors")
+    .setText( "Pause")
+    .setPosition(xOffsetRight, yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing+startButtonHeight)
+    .setColorValue(color(0,0,0))
+    .setFont(createFont("Arial",25))
+                    ;
+
+
+//Create timers
+
+motor1CountdownTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, (int)(motor1TimeSlider.getValue()*1000));
+motor2CountdownTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, (int)(motor2TimeSlider.getValue()*1000));
+  noStroke();
+
+
 }
 
 void draw() {
@@ -177,7 +251,36 @@ void draw() {
 motor1CurrentSpeed = motor1MaxSpeed;
 motor2CurrentSpeed = motor2MaxSpeed;
 //debug end
+checkToggleValues();
 updateScreen();
+runMotors();
+}
+
+void runMotors()
+{
+  
+  
+// - First parameter is ping-pong mode off or on, in ping pong mode a motor
+//   runs for a number of turns (set by the third parameter) in one direction 
+//   and then changes direction once the number of turns is reached.
+// - Second parameter is the speed, usually I use from 600-2500
+// - Third parameter is number of turns before changing direction if ping-pong
+//   mode is active.
+// - Fourth parameter is the direction if ping-ping mode is inactive.
+// - Parameter 5-8 is for the second motor but with the same functions as 1-4
+//
+//e.g    0,800,0,0,0,1200,0,1
+//  That would tell the first motor to run in no-pingpong mode with a constant
+//  speed of 800 in the direction 0 wich is counter clock wise. The second motor
+//  would also run in a non ping-pong mode with a constant speed of 1200 and clockwise.
+if (motor1CurrentState == true && motor2CurrentState == true){
+runMotors = "0,"+motor1CurrentSpeed+",0,"+motor1Direction+",0,"+motor2CurrentSpeed+",0,"+motor2Direction;
+}
+
+else runMotors = "0,0,0,0,0,0,0,0";
+println(runMotors);
+
+  
 }
 
 void updateScreen(){
@@ -194,15 +297,88 @@ void updateScreen(){
 void setCurrentVariablesInLabelText(){
 motor1CurrentParametersTextLabel1.setText("Speed: " + motor1CurrentSpeed);
 motor1CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor1Direction));
-motor1CurrentParametersTextLabel3.setText( "Time until max or min: " + (motor1Time-motor1CurrentTime) + " seconds.");
+motor1CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished/1000 + " seconds.");
 motor2CurrentParametersTextLabel1.setText("Speed: " + motor2CurrentSpeed);
 motor2CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor2Direction));
-motor2CurrentParametersTextLabel3.setText( "Time until max or min: " + (motor2Time-motor2CurrentTime) + " seconds.");
-
-
+motor2CurrentParametersTextLabel3.setText( "Time until max or min: " + motor2TimeUntilFinished/1000 + " seconds.");
 }
 
-//Controller events listeners
+
+
+void checkToggleValues(){
+if (motor1ChangeDirectionButton.getState()  == false){
+  motor1Direction = 1;
+}
+else motor1Direction = 0;
+
+
+if (motor2ChangeDirectionButton.getState()  == false){
+  motor2Direction = 1;
+}
+else motor2Direction = 0;
+
+
+if (startStopDrawing.getState()  == true){
+  motor1CurrentState = true;
+  motor2CurrentState = true;
+  
+  currentMotorStateLabel.setText("Press to Stop");
+  if (motor1LastTimerValue != motor1TimeSlider.getValue()){
+    motor1LastTimerValue = motor1TimeSlider.getValue();
+  motor1CountdownTimer.reset();
+  motor1CountdownTimer.configure(100, (int)(motor1TimeSlider.getValue()*1000)).start();
+  }
+  if (motor2LastTimerValue != motor2TimeSlider.getValue()){
+      motor2LastTimerValue = motor2TimeSlider.getValue();
+      motor2CountdownTimer.reset();
+      motor2CountdownTimer.configure(100, (int)(motor2TimeSlider.getValue()*1000)).start();
+  }
+}
+else {
+  motor1CurrentState = false;
+  motor2CurrentState = false;
+  currentMotorStateLabel.setText("Press to Start");
+  motor1LastTimerValue =0;
+  motor2LastTimerValue =0;
+  motor1CountdownTimer.reset();
+  motor2CountdownTimer.reset();
+}
+}
+
+
+
+//Timer configurations
+void onTickEvent(int timerId, long timeLeftUntilFinish) {
+  // change the radius of the circle based on which timer it was hooked up to
+  switch (timerId) {
+    case 0:
+      motor1TimeUntilFinished = timeLeftUntilFinish;
+      break;
+    case 1:
+     motor2TimeUntilFinished = timeLeftUntilFinish;
+      break;
+    }
+}
+
+void onFinishEvent(int timerId) {
+  // finalize any changes when the timer finishes
+  switch (timerId) {
+    case 0:
+    motor1CountdownTimer.reset();
+      motor1LastTimerValue =0;
+      motor1CountdownTimer.start();
+      break;
+    case 1:
+    motor2CountdownTimer.reset();
+       motor2LastTimerValue =0;
+      motor2CountdownTimer.start();
+      break;
+  }
+
+  println("[timerId:" + timerId + "] finished");
+}
+
+//Controller Events Listeners
 void controlEvent(ControlEvent theControlEvent) {
   if(theControlEvent.isFrom(motor1Range)) {
     // min and max values are stored in an array.
