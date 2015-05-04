@@ -374,6 +374,7 @@ if (startStopDrawing.getState()  == true){
   motor1CountdownTimer.reset();
   motor1CountdownTimer.configure(100, (int)(motor1TimeSlider.getValue()*1000)).start();
   }
+
   if (motor2LastTimerValue != motor2TimeSlider.getValue()){
       motor2LastTimerValue = motor2TimeSlider.getValue();
       motor2CountdownTimer.reset();
