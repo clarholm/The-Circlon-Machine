@@ -9,6 +9,9 @@ ControlP5 cp5;
 Serial myPort;
 boolean firstContact = false;
 String val;
+CountdownTimer serialTransmissionTimer;
+int timeBetweenSerialTransmissions = 200;
+boolean transmissionTimerFinished = true;
 
 //GUI Variables
 int windowSizeWidth;
@@ -70,6 +73,7 @@ int motor2Direction = 0; //0 = counter clockwise, 1 = clockwise
 CountdownTimer motor1CountdownTimer;
 CountdownTimer motor2CountdownTimer;
 String runMotorsString; //contains speed parameters
+String currentValuesFromGuiOrFunction; //contains the parameters the GUI is currently set to.
 
 
 
@@ -78,8 +82,8 @@ void setup() {
   //Create serial communications port
   println(Serial.list());
   String portName = Serial.list()[1];
-  //myPort = new Serial(this, portName, 9600);
-  //myPort.bufferUntil('\n');
+  myPort = new Serial(this, portName, 9600);
+  myPort.bufferUntil('\n');
   
   //Setup window based on screensize
   size(displayWidth-100, displayHeight-100);
@@ -250,6 +254,7 @@ void setup() {
 
 motor1CountdownTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, (int)(motor1TimeSlider.getValue()*1000));
 motor2CountdownTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, (int)(motor2TimeSlider.getValue()*1000));
+serialTransmissionTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, timeBetweenSerialTransmissions);
   noStroke();
 
 
@@ -306,20 +311,24 @@ if (val != null) {
 
 void runMotors()
 {
-  
-if (runMotorsString != ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction)){
+currentValuesFromGuiOrFunction = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction); 
+if (runMotorsString != currentValuesFromGuiOrFunction){
   println("RunMotorsCurrent: " + runMotorsString);
   println("RunMotorsRead:    " + ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction));
   if (motor1CurrentState == true && motor2CurrentState == true){
 runMotorsString = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction);
 println("Before sending run motors command motorcurrentState = true");
+if (transmissionTimerFinished == true){
 myPort.write(runMotorsString);
+transmissionTimerFinished = false;
+serialTransmissionTimer.start();
+}
 println(runMotorsString);
 println("After sending run motors command motorcurrentState = true"); 
 }
 
 else if (motor1CurrentState == false && motor2CurrentState == false){
-runMotorsString = "0,0,0,0,0,0,0,0";
+runMotorsString = "0,0,0,0";
 println("Before sending run motors command motorcurrentState = false");
 myPort.write(runMotorsString);
 println(runMotorsString);
@@ -420,9 +429,14 @@ void onFinishEvent(int timerId) {
        motor2LastTimerValue =0;
       motor2CountdownTimer.start();
       break;
+    case 2:
+    serialTransmissionTimer.reset();
+    transmissionTimerFinished = true;
+    break;
+    
   }
 
-  println("[timerId:" + timerId + "] finished");
+//  println("[timerId:" + timerId + "] finished");
 }
 
 //Controller Events Listeners
