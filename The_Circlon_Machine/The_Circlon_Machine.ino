@@ -94,7 +94,7 @@ void loop()
 
 void checkSerialForData(){
  //check if there is serial data to parse
-  checkSerialForData();
+  
   if (Serial.available() > 0)
   {
     dataAvailable = true;
@@ -214,14 +214,37 @@ void printDebug2() {
 
 //Interrupt function
 void stopAllMotors() {
-  Serial.println("Stopping motor 1");
+  //Serial.println("Stopping motor 1");
   stepper1.setSpeed(0.00001);
   stepper1.runSpeed();
-  Serial.println("Stopping motor 2");
+  //Serial.println("Stopping motor 2");
   stepper2.setSpeed(0.00001);
   stepper2.runSpeed();
-
-  while (stopMotors == LOW || (motor1Speed==0 && motor2Speed == 0)) {
+  /*
+  if(motor1Speed==0 && motor2Speed == 0) {
+    if (debug2 == true) {
+    Serial.println("in if motor1Speed==0 && motor2Speed == 0");
+    Serial.print("stopMotors state: ");
+    Serial.println(stopMotors);
+    Serial.print("motor1Speed: ");
+    Serial.println(motor1Speed);
+    Serial.print("motor2Speed: ");
+    Serial.println(motor2Speed);
+    }
+    checkSerialForData();
+    stopAllMotors();
+    }
+    */
+  while (stopMotors == LOW || (motor1Speed==0 && motor2Speed == 0)){
+      if (debug2 == true) {
+    Serial.println("In stop motors While loop");
+    Serial.print("stopMotors state: ");
+    Serial.println(stopMotors);
+    Serial.print("motor1Speed: ");
+    Serial.println(motor1Speed);
+    Serial.print("motor2Speed: ");
+    Serial.println(motor2Speed);
+    }
     checkSerialForData();
     stopMotors = digitalRead(enableDisableMotormovementsPin);
   }
