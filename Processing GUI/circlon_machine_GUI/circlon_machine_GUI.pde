@@ -69,7 +69,7 @@ int motor1Direction = 0; //0 = counter clockwise, 1 = clockwise
 int motor2Direction = 0; //0 = counter clockwise, 1 = clockwise
 CountdownTimer motor1CountdownTimer;
 CountdownTimer motor2CountdownTimer;
-String runMotors; //contains speed parameters
+String runMotorsString; //contains speed parameters
 
 
 
@@ -78,8 +78,8 @@ void setup() {
   //Create serial communications port
   println(Serial.list());
   String portName = Serial.list()[1];
-  myPort = new Serial(this, portName, 9600);
-  myPort.bufferUntil('\n');
+  //myPort = new Serial(this, portName, 9600);
+  //myPort.bufferUntil('\n');
   
   //Setup window based on screensize
   size(displayWidth-100, displayHeight-100);
@@ -219,7 +219,7 @@ void setup() {
     .setColorLabel(color(0,0,0))
     .setLabelVisible(false)
      ;
-   pauseDrawing = cp5.addToggle("Pause Motors")
+   pauseDrawing = cp5.addToggle("Reset Timers")
      .setPosition(xOffsetRight,yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,startButtonHeight)
      .setValue(0)
@@ -238,8 +238,8 @@ void setup() {
     .setFont(createFont("Arial",25))
                     ;
 
-  pauseMotorLabel = cp5.addTextlabel("pauseMotors")
-    .setText( "Pause")
+  pauseMotorLabel = cp5.addTextlabel("resetTimers")
+    .setText( "Reset Timers")
     .setPosition(xOffsetRight, yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing+startButtonHeight)
     .setColorValue(color(0,0,0))
     .setFont(createFont("Arial",25))
@@ -307,36 +307,22 @@ if (val != null) {
 void runMotors()
 {
   
-  
-// - First parameter is ping-pong mode off or on, in ping pong mode a motor
-//   runs for a number of turns (set by the third parameter) in one direction 
-//   and then changes direction once the number of turns is reached.
-// - Second parameter is the speed, usually I use from 600-2500
-// - Third parameter is number of turns before changing direction if ping-pong
-//   mode is active.
-// - Fourth parameter is the direction if ping-ping mode is inactive.
-// - Parameter 5-8 is for the second motor but with the same functions as 1-4
-//
-//e.g    0,800,0,0,0,1200,0,1
-//  That would tell the first motor to run in no-pingpong mode with a constant
-//  speed of 800 in the direction 0 wich is counter clock wise. The second motor
-//  would also run in a non ping-pong mode with a constant speed of 1200 and clockwise.
-if (runMotors != ("0,"+motor1CurrentSpeed+",0,"+motor1Direction+",0,"+motor2CurrentSpeed+",0,"+motor2Direction)){
-  println("RunMotorsCurrent: " + runMotors);
-  println("RunMotorsRead:    " + ("0,"+motor1CurrentSpeed+",0,"+motor1Direction+",0,"+motor2CurrentSpeed+",0,"+motor2Direction));
+if (runMotorsString != ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction)){
+  println("RunMotorsCurrent: " + runMotorsString);
+  println("RunMotorsRead:    " + ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction));
   if (motor1CurrentState == true && motor2CurrentState == true){
-runMotors = "0,"+motor1CurrentSpeed+",0,"+motor1Direction+",0,"+motor2CurrentSpeed+",0,"+motor2Direction;
+runMotorsString = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction);
 println("Before sending run motors command motorcurrentState = true");
-myPort.write(runMotors);
-println(runMotors);
+myPort.write(runMotorsString);
+println(runMotorsString);
 println("After sending run motors command motorcurrentState = true"); 
 }
 
 else if (motor1CurrentState == false && motor2CurrentState == false){
-runMotors = "0,1,0,0,0,1,0,0";
+runMotorsString = "0,0,0,0,0,0,0,0";
 println("Before sending run motors command motorcurrentState = false");
-myPort.write(runMotors);
-println(runMotors);
+myPort.write(runMotorsString);
+println(runMotorsString);
 println("After sending run motors command motorcurrentState = false");
 }
 }
