@@ -48,12 +48,11 @@ int enableDisableMotormovementsPin = 2;
 int stopMotors;
 int motor1Direction = HIGH;
 int motor2Direction = HIGH;
-long motor1Speed = 0.0000001;
-long motor2Speed = 0.0000001;
-boolean debug = false;
+long motor1Speed = 0;
+long motor2Speed = 0;
 boolean debug2 = false;
 boolean debug3 = false;
-float motorMultiplier = 0.1;
+float motorMultiplier = 0.1; //needed to be able to run at relly low speeds
 String inputString = "";         // a string to hold incoming data
 int inputStringToInt = 0;
 
@@ -83,13 +82,15 @@ void loop()
 {
   //check if motors are enabled.
   stopMotors = digitalRead(enableDisableMotormovementsPin);
-  if (stopMotors == LOW) {
+  if (stopMotors == LOW || (motor1Speed==0 && motor2Speed == 0)) {
     stopAllMotors();
   }
-
+ checkSerialForData();
  runStepper1(motor1Speed, motor1Direction);
  runStepper2(motor2Speed, motor2Direction);
 }
+
+
 
 void checkSerialForData(){
  //check if there is serial data to parse
@@ -211,29 +212,6 @@ void printDebug2() {
   Serial.println("######### printDebug Stop ############");
 }
 
-/*
-void printMotorUpdatedVariables(int MotorNumber) {
-  if (MotorNumber == 1) {
-    Serial.print("motor1Inputval: ");
-    Serial.print(motor1Inputval);
-    Serial.print(", Mapped to: ");
-    Serial.print(motor1Speed );
-    Serial.print(" motor1Direction: ");
-    Serial.println(motor1Direction);
-  }
-  if (MotorNumber == 2) {
-    Serial.print("motor2Inputval: ");
-    Serial.print(motor2Inputval);
-    Serial.print(", Mapped to: ");
-    Serial.print(motor2Speed );
-    Serial.print(" motor2Direction: ");
-    Serial.println(motor2Direction);
-  }
-
-
-}
-
-*/
 //Interrupt function
 void stopAllMotors() {
   Serial.println("Stopping motor 1");
@@ -243,7 +221,8 @@ void stopAllMotors() {
   stepper2.setSpeed(0.00001);
   stepper2.runSpeed();
 
-  while (stopMotors == LOW) {
+  while (stopMotors == LOW || (motor1Speed==0 && motor2Speed == 0)) {
+    checkSerialForData();
     stopMotors = digitalRead(enableDisableMotormovementsPin);
   }
 }
