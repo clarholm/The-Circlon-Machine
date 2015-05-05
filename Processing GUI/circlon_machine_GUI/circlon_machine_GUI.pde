@@ -55,10 +55,10 @@ int buttonHeight = 20;
 int startButtonHeight = 100;
 
 //Motor Control Parameters
-int motor1MinSpeed;
-int motor2MinSpeed;
-int motor1MaxSpeed;
-int motor2MaxSpeed;
+int motor1MinSpeed = 0;
+int motor2MinSpeed = 0;
+int motor1MaxSpeed = 0;
+int motor2MaxSpeed = 0;
 long motor1TimeUntilFinished = 10;
 long motor2TimeUntilFinished = 10;
 int motor1CurrentSpeed = 0;
@@ -313,6 +313,7 @@ arduinoHasProcessedSentParameters = false;
 transmissionTimerFinished = false;
 serialTransmissionTimer.start();
 }
+}
 
 
 void getMotorParametersFromGui(){
@@ -325,7 +326,7 @@ currentValuesFromGuiOrFunction = ((int)motor1CurrentSpeed+","+(int)motor1Directi
 else if (motor1CurrentState == false && motor2CurrentState == false){
 currentValuesFromGuiOrFunction = "0,0,0,0";
 }
-  
+sendMotorParametersOverSerial();  
 }
 
 void updateScreen(){
@@ -366,25 +367,24 @@ else motor2Direction = 0;
 if (startStopDrawing.getState()  == true){
   motor1CurrentState = true;
   motor2CurrentState = true;
+  getMotorParametersFromGui();
   
   currentMotorStateLabel.setText("Press to Stop");
   if (motor1LastTimerValue != motor1TimeSlider.getValue()){
-    getMotorParametersFromGui();
-    motor1LastTimerValue = motor1TimeSlider.getValue();
+  motor1LastTimerValue = motor1TimeSlider.getValue();
   motor1CountdownTimer.reset();
   motor1CountdownTimer.configure(100, (int)(motor1TimeSlider.getValue()*1000)).start();
   
   }
 
   if (motor2LastTimerValue != motor2TimeSlider.getValue()){
-      getMotorParametersFromGui();
       motor2LastTimerValue = motor2TimeSlider.getValue();
       motor2CountdownTimer.reset();
       motor2CountdownTimer.configure(100, (int)(motor2TimeSlider.getValue()*1000)).start();
-      
+       
   }
 }
-else {
+else if(startStopDrawing.getState()  == false){
   motor1CurrentState = false;
   motor2CurrentState = false;
   currentMotorStateLabel.setText("Press to Start");
@@ -394,6 +394,7 @@ else {
   motor1CountdownTimer.reset();
   motor2CountdownTimer.reset();
 }
+
 }
 
 
