@@ -115,6 +115,9 @@ void setup() {
              .setColorForeground(color(153, 0, 51))
              .setColorBackground(color(255, 153, 128))
              .setColorLabel(color(0,0,0))
+             .setNumberOfTickMarks(2500-600)
+             .showTickMarks(false) 
+             .snapToTickMarks(true)
              ; 
   //Create slider for motor two speed control
   motor2Range = cp5.addRange("Motor 2 Speed")
@@ -130,26 +133,35 @@ void setup() {
              .setColorForeground(color(153, 0, 51))
              .setColorBackground(color(255, 153, 128))
              .setColorLabel(color(0,0,0))
+             .setNumberOfTickMarks(2500-600)
+             .showTickMarks(false) 
+             .snapToTickMarks(true)
              ;
              
   motor1TimeSlider = cp5.addSlider("Motor 1 Time")
      .setPosition(xOffsetLeft,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
-     .setRange(10,200)
+     .setRange(1,200)
      .setValue(30)
      .setColorForeground(color(153, 0, 51))
      .setColorBackground(color(255, 153, 128))
      .setColorLabel(color(0,0,0))
+      .setNumberOfTickMarks(200-1)
+      .showTickMarks(false) 
+      .snapToTickMarks(true)
      ;
   
    motor2TimeSlider = cp5.addSlider("Motor 2 Time")
     .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
     .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
-    .setRange(10,200)
+    .setRange(1,200)
     .setValue(30)
     .setColorForeground(color(153, 0, 51))
     .setColorBackground(color(255, 153, 128))
     .setColorLabel(color(0,0,0))
+     .setNumberOfTickMarks(200-1)
+      .showTickMarks(false) 
+      .snapToTickMarks(true)
     ;
 
 
@@ -327,9 +339,9 @@ if (val != null) {
 
 
 void sendMotorParametersOverSerial(){
-println("in send function, transmissionTimerFinished = "+transmissionTimerFinished+ " arduinoHasProcessedSentParameters: " +arduinoHasProcessedSentParameters );
+//println("in send function, transmissionTimerFinished = "+transmissionTimerFinished+ " arduinoHasProcessedSentParameters: " +arduinoHasProcessedSentParameters );
 if (transmissionTimerFinished == true && arduinoHasProcessedSentParameters == true){
-  println("Just before sending function =" + currentValuesFromGuiOrFunction);
+println("Just before sending function =" + currentValuesFromGuiOrFunction);
 myPort.write(currentValuesFromGuiOrFunction);
 arduinoHasProcessedSentParameters = true;
 transmissionTimerFinished = false;
@@ -374,7 +386,7 @@ void calculateNextSpeedBasedOnFadingFunction(){
         println("(motor1StepsPerMilliSecond*((int)motor1CountdownTimer.getTimerDuration() - (int)motor1CountdownTimer.getTimeLeftUntilFinish()) "+((long)motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish())));
         */
       if (motor1timerFinished == true ){
-        println("motor1timerFinished == true");
+       // println("motor1timerFinished == true");
       motor1FunctionIsCurrentlyIncreasingSpeed = !motor1FunctionIsCurrentlyIncreasingSpeed;
       motor1timerFinished = false;
       motor1CountdownTimer.start();
@@ -382,7 +394,7 @@ void calculateNextSpeedBasedOnFadingFunction(){
 
       else {
 
-        println("motorspeed should change, motor1FunctionIsCurrentlyIncreasingSpeed= " + motor1FunctionIsCurrentlyIncreasingSpeed);
+       // println("motorspeed should change, motor1FunctionIsCurrentlyIncreasingSpeed= " + motor1FunctionIsCurrentlyIncreasingSpeed);
       if (motor1FunctionIsCurrentlyIncreasingSpeed == true){
         
       motor1CurrentSpeed = (float)motor1MinSpeed+((motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish()))/10000);
@@ -393,7 +405,7 @@ void calculateNextSpeedBasedOnFadingFunction(){
       }
       
       if (motor2timerFinished == true ){
-        println("motor2timerFinished == true");
+       // println("motor2timerFinished == true");
       motor2FunctionIsCurrentlyIncreasingSpeed = !motor2FunctionIsCurrentlyIncreasingSpeed;
       motor2timerFinished = false;
       motor2CountdownTimer.start();
@@ -408,7 +420,7 @@ void calculateNextSpeedBasedOnFadingFunction(){
       }
       
       currentValuesFromGuiOrFunction = (int)motor1CurrentSpeed + "," + (int)motor1Direction+"," + (int)motor2CurrentSpeed + "," + (int)motor2Direction;
-      println("currentValuesFromGuiOrFunction: " + currentValuesFromGuiOrFunction);
+      //println("currentValuesFromGuiOrFunction: " + currentValuesFromGuiOrFunction);
       sendMotorParametersOverSerial();
       break;
  }
