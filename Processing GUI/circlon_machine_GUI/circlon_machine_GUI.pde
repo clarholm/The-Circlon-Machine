@@ -61,8 +61,8 @@ int motor1MaxSpeed = 0;
 int motor2MaxSpeed = 0;
 long motor1TimeUntilFinished = 10;
 long motor2TimeUntilFinished = 10;
-long motor1CurrentSpeed = 0;
-long motor2CurrentSpeed = 0;
+float motor1CurrentSpeed = 0;
+float motor2CurrentSpeed = 0;
 int motor1CurrentTime = 0;
 int motor2CurrentTime = 0;
 float motor1LastTimerValue = 0;
@@ -353,17 +353,21 @@ sendMotorParametersOverSerial();
 void calculateNextSpeedBasedOnFadingFunction(){
     motor1MinSpeed = (int)motor1Range.getLowValue();
     motor1MaxSpeed = (int)motor1Range.getHighValue();
-  int motor1NumberOfSpeedStepsBetweenMaxAndMin = motor1MaxSpeed-motor1MinSpeed;
+  int motor1NumberOfSpeedStepsBetweenMaxAndMin = (motor1MaxSpeed-motor1MinSpeed)*1000;
   //println("motor1NumberOfSpeedStepsBetweenMaxAndMin: " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
-  int motor2NumberOfSpeedStepsBetweenMaxAndMin = motor2MaxSpeed-motor2MinSpeed;
+  int motor2NumberOfSpeedStepsBetweenMaxAndMin = (motor2MaxSpeed-motor2MinSpeed)*1000;
   long motor1MilliSecondsToTraverseTheSpeedSteps = motor1CountdownTimer.getTimerDuration();
   long motor2MilliSecondsToTraverseTheSpeedSteps = motor2CountdownTimer.getTimerDuration();
-  long motor1StepsPerMilliSecond = motor1NumberOfSpeedStepsBetweenMaxAndMin/motor1MilliSecondsToTraverseTheSpeedSteps;
-  long motor2StepsPerMilliSecond = motor2NumberOfSpeedStepsBetweenMaxAndMin/motor2MilliSecondsToTraverseTheSpeedSteps;
+  float motor1StepsPerMilliSecond = motor1NumberOfSpeedStepsBetweenMaxAndMin/motor1MilliSecondsToTraverseTheSpeedSteps;
+  float motor2StepsPerMilliSecond = motor2NumberOfSpeedStepsBetweenMaxAndMin/motor2MilliSecondsToTraverseTheSpeedSteps;
  switch (fadingFunctionId) {
     case 0:
       println("case 0 started, motor1FunctionIsCurrentlyIncreasingSpeed= " + motor1FunctionIsCurrentlyIncreasingSpeed);
-      if (motor1CurrentSpeed >= motor1MaxSpeed){
+              println("motor1StepsPerMilliSecond= " + motor1StepsPerMilliSecond);
+        println("motor1CountdownTimer.getTimerDuration()= " + motor1CountdownTimer.getTimerDuration());
+        println("motor1NumberOfSpeedStepsBetweenMaxAndMin= " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
+        println("(motor1StepsPerMilliSecond*((int)motor1CountdownTimer.getTimerDuration() - (int)motor1CountdownTimer.getTimeLeftUntilFinish()) "+((long)motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish())));
+      if (motor1CurrentSpeed >= motor1MaxSpeed ){
         println("motor1CurrentSpeed >= motor1MaxSpeed");
       motor1FunctionIsCurrentlyIncreasingSpeed = false;
       motor1CurrentSpeed=motor1MaxSpeed-1;
@@ -376,18 +380,14 @@ void calculateNextSpeedBasedOnFadingFunction(){
        motor1CountdownTimer.start();
       }
       else {
-        println("motor1StepsPerMilliSecond= " + motor1StepsPerMilliSecond);
-        println("motor1CountdownTimer.getTimerDuration()= " + motor1CountdownTimer.getTimerDuration());
-        
-        println("motor1NumberOfSpeedStepsBetweenMaxAndMin= " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
-        println("(motor1StepsPerMilliSecond*((int)motor1CountdownTimer.getTimerDuration() - (int)motor1CountdownTimer.getTimeLeftUntilFinish()) "+((long)motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish())));
+
         println("motorspeed should change, motor1FunctionIsCurrentlyIncreasingSpeed= " + motor1FunctionIsCurrentlyIncreasingSpeed);
       if (motor1FunctionIsCurrentlyIncreasingSpeed == true){
         
-      motor1CurrentSpeed = (long)motor1MinSpeed+(motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish()));
+      motor1CurrentSpeed = (float)motor1MinSpeed+((motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish()))/1000);
       }
       if (motor1FunctionIsCurrentlyIncreasingSpeed == false){
-        motor1CurrentSpeed = motor1MaxSpeed-(motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish()));
+        motor1CurrentSpeed = (float)motor1MaxSpeed-((motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish()))/1000);
       }
       }
       
@@ -403,10 +403,10 @@ void calculateNextSpeedBasedOnFadingFunction(){
       }
       else {
       if (motor2FunctionIsCurrentlyIncreasingSpeed == true){
-        motor2CurrentSpeed = motor2CurrentSpeed+(motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()));
+        motor2CurrentSpeed = (float)motor1MaxSpeed+((motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()))/1000);
       }
       if (motor2FunctionIsCurrentlyIncreasingSpeed == false){
-        motor2CurrentSpeed = motor2CurrentSpeed-(motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()));
+        motor2CurrentSpeed = (float)motor1MinSpeed-((motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()))/1000);
       }
       }
       
