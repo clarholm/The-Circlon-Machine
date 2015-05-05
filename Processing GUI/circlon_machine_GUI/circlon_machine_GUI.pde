@@ -12,6 +12,7 @@ String val;
 CountdownTimer serialTransmissionTimer;
 int timeBetweenSerialTransmissions = 200;
 boolean transmissionTimerFinished = true;
+boolean arduinoHasProcessedSentParameters = true;
 
 //GUI Variables
 int windowSizeWidth;
@@ -295,45 +296,34 @@ if (val != null) {
     }
   }
   else { //if we've already established contact, keep getting and parsing data
-    println(val);
+    println("Received serial data from Arduino: " +val);
     if (val.equals("parametersProcessed")) {
-      myPort.clear();
-      runMotors();                   //send next motor parameters
-
+     arduinoHasProcessedSentParameters = true; 
     }
-
+    myPort.clear();
     }
   }
 }
 
+void sendMotorParametersOverSerial(){
 
-
-
-void runMotors()
-{
-currentValuesFromGuiOrFunction = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction); 
-if (runMotorsString != currentValuesFromGuiOrFunction){
-  println("RunMotorsCurrent: " + runMotorsString);
-  println("RunMotorsRead:    " + ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction));
-  if (motor1CurrentState == true && motor2CurrentState == true){
-runMotorsString = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction);
-println("Before sending run motors command motorcurrentState = true");
-if (transmissionTimerFinished == true){
-myPort.write(runMotorsString);
+if (transmissionTimerFinished == true && arduinoHasProcessedSentParameters == true){
+myPort.write(currentValuesFromGuiOrFunction);
+arduinoHasProcessedSentParameters = false;
 transmissionTimerFinished = false;
 serialTransmissionTimer.start();
 }
-println(runMotorsString);
-println("After sending run motors command motorcurrentState = true"); 
+
+
+void getMotorParametersFromGui(){
+
+if (motor1CurrentState == true && motor2CurrentState == true){
+currentValuesFromGuiOrFunction = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction); 
 }
 
+
 else if (motor1CurrentState == false && motor2CurrentState == false){
-runMotorsString = "0,0,0,0";
-println("Before sending run motors command motorcurrentState = false");
-myPort.write(runMotorsString);
-println(runMotorsString);
-println("After sending run motors command motorcurrentState = false");
-}
+currentValuesFromGuiOrFunction = "0,0,0,0";
 }
   
 }
@@ -379,21 +369,26 @@ if (startStopDrawing.getState()  == true){
   
   currentMotorStateLabel.setText("Press to Stop");
   if (motor1LastTimerValue != motor1TimeSlider.getValue()){
+    getMotorParametersFromGui();
     motor1LastTimerValue = motor1TimeSlider.getValue();
   motor1CountdownTimer.reset();
   motor1CountdownTimer.configure(100, (int)(motor1TimeSlider.getValue()*1000)).start();
+  
   }
 
   if (motor2LastTimerValue != motor2TimeSlider.getValue()){
+      getMotorParametersFromGui();
       motor2LastTimerValue = motor2TimeSlider.getValue();
       motor2CountdownTimer.reset();
       motor2CountdownTimer.configure(100, (int)(motor2TimeSlider.getValue()*1000)).start();
+      
   }
 }
 else {
   motor1CurrentState = false;
   motor2CurrentState = false;
   currentMotorStateLabel.setText("Press to Start");
+  getMotorParametersFromGui();
   motor1LastTimerValue =0;
   motor2LastTimerValue =0;
   motor1CountdownTimer.reset();
