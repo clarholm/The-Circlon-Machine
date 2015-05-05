@@ -80,6 +80,8 @@ String currentValuesFromGuiOrFunction; //contains the parameters the GUI is curr
 int fadingFunctionId = 0;
 boolean motor1FunctionIsCurrentlyIncreasingSpeed = true;
 boolean motor2FunctionIsCurrentlyIncreasingSpeed = true;
+boolean motor1timerFinished = false;
+boolean motor2timerFinished = false;
 
 void setup() {
   
@@ -353,6 +355,8 @@ sendMotorParametersOverSerial();
 void calculateNextSpeedBasedOnFadingFunction(){
     motor1MinSpeed = (int)motor1Range.getLowValue();
     motor1MaxSpeed = (int)motor1Range.getHighValue();
+    motor2MinSpeed = (int)motor2Range.getLowValue();
+    motor2MaxSpeed = (int)motor2Range.getHighValue();
   int motor1NumberOfSpeedStepsBetweenMaxAndMin = (motor1MaxSpeed-motor1MinSpeed)*1000;
   //println("motor1NumberOfSpeedStepsBetweenMaxAndMin: " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
   int motor2NumberOfSpeedStepsBetweenMaxAndMin = (motor2MaxSpeed-motor2MinSpeed)*1000;
@@ -367,18 +371,13 @@ void calculateNextSpeedBasedOnFadingFunction(){
         println("motor1CountdownTimer.getTimerDuration()= " + motor1CountdownTimer.getTimerDuration());
         println("motor1NumberOfSpeedStepsBetweenMaxAndMin= " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
         println("(motor1StepsPerMilliSecond*((int)motor1CountdownTimer.getTimerDuration() - (int)motor1CountdownTimer.getTimeLeftUntilFinish()) "+((long)motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish())));
-      if (motor1CurrentSpeed >= motor1MaxSpeed ){
-        println("motor1CurrentSpeed >= motor1MaxSpeed");
-      motor1FunctionIsCurrentlyIncreasingSpeed = false;
-      motor1CurrentSpeed=motor1MaxSpeed-1;
+      if (motor1timerFinished == true ){
+        println("motor1timerFinished == true");
+      motor1FunctionIsCurrentlyIncreasingSpeed = !motor1FunctionIsCurrentlyIncreasingSpeed;
+      motor1timerFinished = false;
       motor1CountdownTimer.start();
       }
-      else if (motor1CurrentSpeed <= motor1MinSpeed){
-        println("motor1CurrentSpeed <= motor1MinSpeed");
-      motor1FunctionIsCurrentlyIncreasingSpeed = true;
-       motor1CurrentSpeed=motor1MinSpeed+1;
-       motor1CountdownTimer.start();
-      }
+
       else {
 
         println("motorspeed should change, motor1FunctionIsCurrentlyIncreasingSpeed= " + motor1FunctionIsCurrentlyIncreasingSpeed);
@@ -391,22 +390,18 @@ void calculateNextSpeedBasedOnFadingFunction(){
       }
       }
       
-      if (motor2CurrentSpeed >= motor2MaxSpeed){
-      motor2FunctionIsCurrentlyIncreasingSpeed = false;
-      motor2CurrentSpeed=motor2MaxSpeed-1;
-      motor1CountdownTimer.start();
-      }
-      else if (motor2CurrentSpeed <= motor2MinSpeed){
-      motor2FunctionIsCurrentlyIncreasingSpeed = true;
-       motor2CurrentSpeed=motor2MinSpeed+1;
-       motor1CountdownTimer.start();
+      if (motor2timerFinished == true ){
+        println("motor2timerFinished == true");
+      motor2FunctionIsCurrentlyIncreasingSpeed = !motor2FunctionIsCurrentlyIncreasingSpeed;
+      motor2timerFinished = false;
+      motor2CountdownTimer.start();
       }
       else {
       if (motor2FunctionIsCurrentlyIncreasingSpeed == true){
-        motor2CurrentSpeed = (float)motor1MaxSpeed+((motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()))/1000);
+        motor2CurrentSpeed = (float)motor2MinSpeed+((motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()))/1000);
       }
       if (motor2FunctionIsCurrentlyIncreasingSpeed == false){
-        motor2CurrentSpeed = (float)motor1MinSpeed-((motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()))/1000);
+        motor2CurrentSpeed = (float)motor2MaxSpeed-((motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()))/1000);
       }
       }
       
@@ -508,6 +503,7 @@ void onFinishEvent(int timerId) {
   // finalize any changes when the timer finishes
   switch (timerId) {
     case 0:
+    motor1timerFinished = true;
     motor1CountdownTimer.reset();
       motor1LastTimerValue =0;
       
@@ -515,6 +511,7 @@ void onFinishEvent(int timerId) {
     case 1:
     motor2CountdownTimer.reset();
        motor2LastTimerValue =0;
+       motor2timerFinished = true;
 
       break;
     case 2:
