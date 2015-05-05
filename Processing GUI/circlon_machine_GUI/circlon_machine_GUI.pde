@@ -61,8 +61,8 @@ int motor1MaxSpeed = 0;
 int motor2MaxSpeed = 0;
 long motor1TimeUntilFinished = 10;
 long motor2TimeUntilFinished = 10;
-int motor1CurrentSpeed = 0;
-int motor2CurrentSpeed = 0;
+long motor1CurrentSpeed = 0;
+long motor2CurrentSpeed = 0;
 int motor1CurrentTime = 0;
 int motor2CurrentTime = 0;
 float motor1LastTimerValue = 0;
@@ -76,7 +76,10 @@ CountdownTimer motor2CountdownTimer;
 String runMotorsString; //contains speed parameters
 String currentValuesFromGuiOrFunction; //contains the parameters the GUI is currently set to.
 
-
+//FadingFunctionVariables
+int fadingFunctionId = 0;
+boolean motor1FunctionIsCurrentlyIncreasingSpeed = true;
+boolean motor2FunctionIsCurrentlyIncreasingSpeed = true;
 
 void setup() {
   
@@ -265,9 +268,10 @@ void draw() {
   
   
 //debug start
-motor1CurrentSpeed = motor1MaxSpeed;
-motor2CurrentSpeed = motor2MaxSpeed;
+//motor1CurrentSpeed = motor1MaxSpeed;
+//motor2CurrentSpeed = motor2MaxSpeed;
 //debug end
+updateValuesFromRangeSliders();
 checkToggleValues();
 updateScreen();
 //runMotors();
@@ -275,7 +279,13 @@ updateScreen();
 
 }
 
+void updateValuesFromRangeSliders(){
+
+
+}
+
 void serialEvent( Serial myPort) {
+    try {
 //put the incoming data into a String - 
 //the '\n' is our end delimiter indicating the end of a complete packet
 val = myPort.readStringUntil('\n');
@@ -293,6 +303,8 @@ if (val != null) {
       firstContact = true;
       myPort.write("A");
       println("contact");
+      arduinoHasProcessedSentParameters = true; 
+      serialTransmissionTimer.start();
     }
   }
   else { //if we've already established contact, keep getting and parsing data
@@ -303,11 +315,19 @@ if (val != null) {
     myPort.clear();
     }
   }
-}
+    }
+       catch (Exception e) {
+    println("Initialization exception");
+//    decide what to do here
+  }
+ }
+ 
+
 
 void sendMotorParametersOverSerial(){
-
+println("in send function, transmissionTimerFinished = "+transmissionTimerFinished+ " arduinoHasProcessedSentParameters: " +arduinoHasProcessedSentParameters );
 if (transmissionTimerFinished == true && arduinoHasProcessedSentParameters == true){
+  println("Just before sending function =" + currentValuesFromGuiOrFunction);
 myPort.write(currentValuesFromGuiOrFunction);
 arduinoHasProcessedSentParameters = false;
 transmissionTimerFinished = false;
@@ -319,7 +339,8 @@ serialTransmissionTimer.start();
 void getMotorParametersFromGui(){
 
 if (motor1CurrentState == true && motor2CurrentState == true){
-currentValuesFromGuiOrFunction = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction); 
+calculateNextSpeedBasedOnFadingFunction();
+//currentValuesFromGuiOrFunction = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction); 
 }
 
 
@@ -328,6 +349,74 @@ currentValuesFromGuiOrFunction = "0,0,0,0";
 }
 sendMotorParametersOverSerial();  
 }
+
+void calculateNextSpeedBasedOnFadingFunction(){
+    motor1MinSpeed = (int)motor1Range.getLowValue();
+    motor1MaxSpeed = (int)motor1Range.getHighValue();
+  int motor1NumberOfSpeedStepsBetweenMaxAndMin = motor1MaxSpeed-motor1MinSpeed;
+  //println("motor1NumberOfSpeedStepsBetweenMaxAndMin: " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
+  int motor2NumberOfSpeedStepsBetweenMaxAndMin = motor2MaxSpeed-motor2MinSpeed;
+  long motor1MilliSecondsToTraverseTheSpeedSteps = motor1CountdownTimer.getTimerDuration();
+  long motor2MilliSecondsToTraverseTheSpeedSteps = motor2CountdownTimer.getTimerDuration();
+  long motor1StepsPerMilliSecond = motor1NumberOfSpeedStepsBetweenMaxAndMin/motor1MilliSecondsToTraverseTheSpeedSteps;
+  long motor2StepsPerMilliSecond = motor2NumberOfSpeedStepsBetweenMaxAndMin/motor2MilliSecondsToTraverseTheSpeedSteps;
+ switch (fadingFunctionId) {
+    case 0:
+      println("case 0 started, motor1FunctionIsCurrentlyIncreasingSpeed= " + motor1FunctionIsCurrentlyIncreasingSpeed);
+      if (motor1CurrentSpeed >= motor1MaxSpeed){
+        println("motor1CurrentSpeed >= motor1MaxSpeed");
+      motor1FunctionIsCurrentlyIncreasingSpeed = false;
+      motor1CurrentSpeed=motor1MaxSpeed-1;
+      motor1CountdownTimer.start();
+      }
+      else if (motor1CurrentSpeed <= motor1MinSpeed){
+        println("motor1CurrentSpeed <= motor1MinSpeed");
+      motor1FunctionIsCurrentlyIncreasingSpeed = true;
+       motor1CurrentSpeed=motor1MinSpeed+1;
+       motor1CountdownTimer.start();
+      }
+      else {
+        println("motor1StepsPerMilliSecond= " + motor1StepsPerMilliSecond);
+        println("motor1CountdownTimer.getTimerDuration()= " + motor1CountdownTimer.getTimerDuration());
+        
+        println("motor1NumberOfSpeedStepsBetweenMaxAndMin= " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
+        println("(motor1StepsPerMilliSecond*((int)motor1CountdownTimer.getTimerDuration() - (int)motor1CountdownTimer.getTimeLeftUntilFinish()) "+((long)motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish())));
+        println("motorspeed should change, motor1FunctionIsCurrentlyIncreasingSpeed= " + motor1FunctionIsCurrentlyIncreasingSpeed);
+      if (motor1FunctionIsCurrentlyIncreasingSpeed == true){
+        
+      motor1CurrentSpeed = (long)motor1MinSpeed+(motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish()));
+      }
+      if (motor1FunctionIsCurrentlyIncreasingSpeed == false){
+        motor1CurrentSpeed = motor1MaxSpeed-(motor1StepsPerMilliSecond*(motor1CountdownTimer.getTimerDuration() - motor1CountdownTimer.getTimeLeftUntilFinish()));
+      }
+      }
+      
+      if (motor2CurrentSpeed >= motor2MaxSpeed){
+      motor2FunctionIsCurrentlyIncreasingSpeed = false;
+      motor2CurrentSpeed=motor2MaxSpeed-1;
+      motor1CountdownTimer.start();
+      }
+      else if (motor2CurrentSpeed <= motor2MinSpeed){
+      motor2FunctionIsCurrentlyIncreasingSpeed = true;
+       motor2CurrentSpeed=motor2MinSpeed+1;
+       motor1CountdownTimer.start();
+      }
+      else {
+      if (motor2FunctionIsCurrentlyIncreasingSpeed == true){
+        motor2CurrentSpeed = motor2CurrentSpeed+(motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()));
+      }
+      if (motor2FunctionIsCurrentlyIncreasingSpeed == false){
+        motor2CurrentSpeed = motor2CurrentSpeed-(motor2StepsPerMilliSecond*(motor2CountdownTimer.getTimerDuration() - motor2CountdownTimer.getTimeLeftUntilFinish()));
+      }
+      }
+      
+      currentValuesFromGuiOrFunction = (int)motor1CurrentSpeed + "," + (int)motor1Direction+"," + (int)motor2CurrentSpeed + "," + (int)motor2Direction;
+      println("currentValuesFromGuiOrFunction: " + currentValuesFromGuiOrFunction);
+      sendMotorParametersOverSerial();
+      break;
+ }
+}
+
 
 void updateScreen(){
  background(255, 255, 255);
@@ -409,6 +498,9 @@ void onTickEvent(int timerId, long timeLeftUntilFinish) {
     case 1:
      motor2TimeUntilFinished = timeLeftUntilFinish;
       break;
+    case 2:
+
+      break;
     }
 }
 
@@ -418,12 +510,12 @@ void onFinishEvent(int timerId) {
     case 0:
     motor1CountdownTimer.reset();
       motor1LastTimerValue =0;
-      motor1CountdownTimer.start();
+      
       break;
     case 1:
     motor2CountdownTimer.reset();
        motor2LastTimerValue =0;
-      motor2CountdownTimer.start();
+
       break;
     case 2:
     serialTransmissionTimer.reset();
