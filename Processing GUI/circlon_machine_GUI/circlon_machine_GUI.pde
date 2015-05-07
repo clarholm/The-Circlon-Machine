@@ -94,7 +94,7 @@ void setup() {
   
   //Create serial communications port
   println(Serial.list());
-  String portName = Serial.list()[1];
+  String portName = Serial.list()[0];
   myPort = new Serial(this, portName, 9600);
   myPort.bufferUntil('\n');
   
@@ -105,8 +105,8 @@ void setup() {
   }
   //Set background clour to white.
   background(255, 255, 255);
-  windowSizeWidth = displayWidth-100;
-  windowSizeHeight = displayHeight-100;
+  windowSizeWidth = displayWidth-10;
+  windowSizeHeight = displayHeight-30;
   
   headline = loadImage("circlon-gui-bgnd.jpg");
   
