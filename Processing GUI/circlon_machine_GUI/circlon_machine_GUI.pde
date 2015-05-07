@@ -84,7 +84,7 @@ String runMotorsString; //contains speed parameters
 String currentValuesFromGuiOrFunction; //contains the parameters the GUI is currently set to.
 
 //FadingFunctionVariables
-int fadingFunctionId = 0;
+int fadingFunctionId = 1;
 boolean motor1FunctionIsCurrentlyIncreasingSpeed = true;
 boolean motor2FunctionIsCurrentlyIncreasingSpeed = true;
 boolean motor1timerFinished = false;
@@ -111,7 +111,7 @@ void setup() {
   cp5 = new ControlP5(this);
   
   //Create slider for motor one speed control
-  motor1Range = cp5.addRange("Motor 1 Speed")
+  motor1Range = cp5.addRange("Motor 1 Speed Range")
                // disable broadcasting since setRange and setRangeValues will trigger an event
              .setBroadcast(false) 
              .setPosition(xOffsetLeft,yOffsetTop+buttonHeight+sliderHorizontalSpacing)
@@ -131,7 +131,7 @@ void setup() {
              ;
              
   //Create slider for motor two speed control
-  motor2Range = cp5.addRange("Motor 2 Speed")
+  motor2Range = cp5.addRange("Motor 2 Speed range")
                // disable broadcasting since setRange and setRangeValues will trigger an event
              .setBroadcast(false) 
              .setPosition((windowSizeWidth/2+xOffsetRight), yOffsetTop+buttonHeight+sliderHorizontalSpacing)
@@ -152,7 +152,7 @@ void setup() {
              
 //speed sliders for basic mode
 
-      motor1SpeedSlider = cp5.addSlider("Motor 1 Speed")
+      motor1SpeedSlider = cp5.addSlider("Motor 1 Speed Slider")
       .setPosition(xOffsetLeft,yOffsetTop+buttonHeight+sliderHorizontalSpacing)
       .setSize(windowSizeWidth/2-xOffsetLeft-100, sliderHeight)
      .setRange(200,2500)
@@ -163,7 +163,7 @@ void setup() {
      .setVisible(true) 
      ;
      
-      motor2SpeedSlider = cp5.addSlider("Motor 2 Speed")
+      motor2SpeedSlider = cp5.addSlider("Motor 2 Speed Slider")
      .setPosition((windowSizeWidth/2+xOffsetRight), yOffsetTop+buttonHeight+sliderHorizontalSpacing)
      .setSize((windowSizeWidth/2-xOffsetRight-100), sliderHeight)
      .setRange(200,2500)
@@ -222,6 +222,7 @@ void setup() {
                     .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+2*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
+                    
                     ;                   
 
   motor2CurrentParametersTextLabel1 = cp5.addTextlabel("motor2Label1")
@@ -244,6 +245,7 @@ void setup() {
                     .setPosition(windowSizeWidth/2+xOffsetRight, yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+2*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
+                    
                     ;
 
 
@@ -316,6 +318,7 @@ void setup() {
     .setPosition(xOffsetRight, yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing+startButtonHeight)
     .setColorValue(color(0,0,0))
     .setFont(createFont("Arial",25))
+    .setVisible(false)
                     ;
 
 
@@ -331,12 +334,11 @@ serialTransmissionTimer = CountdownTimerService.getNewCountdownTimer(this).confi
 
 void draw() {
   
-image(headline, windowSizeWidth/2-300, 20);
+
 //debug start
 //motor1CurrentSpeed = motor1MaxSpeed;
 //motor2CurrentSpeed = motor2MaxSpeed;
 //debug end
-updateValuesFromRangeSliders();
 checkToggleValues();
 updateScreen();
 //runMotors();
@@ -346,37 +348,54 @@ updateScreen();
 
 void updateGuiAtModeChange(){
 if (advancedGui == true){
+  fadingFunctionId = 0;
+  
   motor1Range.setVisible(true);
   motor2Range.setVisible(true);
   motor1TimeSlider.setVisible(true);
   motor2TimeSlider.setVisible(true);
   motor1SpeedSlider.setVisible(false);
-  motor1SpeedSlider.setVisible(false);
+  motor2SpeedSlider.setVisible(false);
+  motor1CurrentParametersTextLabel1.setVisible(true) ;
+  motor1CurrentParametersTextLabel2.setVisible(true);                 
+  motor1CurrentParametersTextLabel3.setVisible(true) ;                   
+  motor2CurrentParametersTextLabel1.setVisible(true) ;          
+  motor2CurrentParametersTextLabel2.setVisible(true) ;                 
+  motor2CurrentParametersTextLabel3.setVisible(true) ;
   
-  //textlables
-  motor1CurrentParametersTextLabel1.setText("Speed: " + motor1CurrentSpeed).setLabelVisible(true) ;
-  motor1CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor1Direction).setLabelVisible(true);                 
-  motor1CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setLabelVisible(true) ;                   
-  motor2CurrentParametersTextLabel1.setText("Speed: " + motor2CurrentSpeed).setLabelVisible(true) ;          
-  motor2CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor2Direction).setLabelVisible(true) ;                 
-  motor2CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setLabelVisible(true) ;
+  motor1CurrentParametersTextLabel1.draw(this);
+  motor1CurrentParametersTextLabel2.draw(this);
+  motor1CurrentParametersTextLabel3.draw(this);
+  motor2CurrentParametersTextLabel1.draw(this);
+  motor2CurrentParametersTextLabel2.draw(this);
+  motor2CurrentParametersTextLabel3.draw(this);
 
 
 }
 else {
+  
+  fadingFunctionId = 1;
+
   motor1Range.setVisible(false);
   motor2Range.setVisible(false);
   motor1TimeSlider.setVisible(false);
   motor2TimeSlider.setVisible(false);
   motor1SpeedSlider.setVisible(true);
-  motor1SpeedSlider.setVisible(true);
-  //textlables
-  motor1CurrentParametersTextLabel1.setText("Speed: " + motor1CurrentSpeed).setLabelVisible(true) ;
-  motor1CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor1Direction).setLabelVisible(true);                 
-  motor1CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setLabelVisible(false) ;                   
-  motor2CurrentParametersTextLabel1.setText("Speed: " + motor2CurrentSpeed).setLabelVisible(true) ;          
-  motor2CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor2Direction).setLabelVisible(true) ;                 
-  motor2CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setLabelVisible(false) ;
+  motor2SpeedSlider.setVisible(true);
+
+  motor1CurrentParametersTextLabel1.setVisible(true) ;
+  motor1CurrentParametersTextLabel2.setVisible(true);                 
+  motor1CurrentParametersTextLabel3.setVisible(false) ;                   
+  motor2CurrentParametersTextLabel1.setVisible(true) ;          
+  motor2CurrentParametersTextLabel2.setVisible(true) ;                 
+  motor2CurrentParametersTextLabel3.setVisible(false) ;
+  
+  motor1CurrentParametersTextLabel1.draw(this);
+  motor1CurrentParametersTextLabel2.draw(this);
+  motor1CurrentParametersTextLabel3.draw(this);
+  motor2CurrentParametersTextLabel1.draw(this);
+  motor2CurrentParametersTextLabel2.draw(this);
+  motor2CurrentParametersTextLabel3.draw(this);
 
 }
 
@@ -450,19 +469,21 @@ sendMotorParametersOverSerial();
 }
 
 void calculateNextSpeedBasedOnFadingFunction(){
-    motor1MinSpeed = (int)motor1Range.getLowValue();
-    motor1MaxSpeed = (int)motor1Range.getHighValue();
-    motor2MinSpeed = (int)motor2Range.getLowValue();
-    motor2MaxSpeed = (int)motor2Range.getHighValue();
-  int motor1NumberOfSpeedStepsBetweenMaxAndMin = (motor1MaxSpeed-motor1MinSpeed)*10000;
-  //println("motor1NumberOfSpeedStepsBetweenMaxAndMin: " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
-  int motor2NumberOfSpeedStepsBetweenMaxAndMin = (motor2MaxSpeed-motor2MinSpeed)*10000;
-  long motor1MilliSecondsToTraverseTheSpeedSteps = motor1CountdownTimer.getTimerDuration();
-  long motor2MilliSecondsToTraverseTheSpeedSteps = motor2CountdownTimer.getTimerDuration();
-  float motor1StepsPerMilliSecond = motor1NumberOfSpeedStepsBetweenMaxAndMin/motor1MilliSecondsToTraverseTheSpeedSteps;
-  float motor2StepsPerMilliSecond = motor2NumberOfSpeedStepsBetweenMaxAndMin/motor2MilliSecondsToTraverseTheSpeedSteps;
+
  switch (fadingFunctionId) {
+   
     case 0:
+        motor1MinSpeed = (int)motor1Range.getLowValue();
+        motor1MaxSpeed = (int)motor1Range.getHighValue();
+        motor2MinSpeed = (int)motor2Range.getLowValue();
+        motor2MaxSpeed = (int)motor2Range.getHighValue();
+        int motor1NumberOfSpeedStepsBetweenMaxAndMin = (motor1MaxSpeed-motor1MinSpeed)*10000;
+        //println("motor1NumberOfSpeedStepsBetweenMaxAndMin: " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
+        int motor2NumberOfSpeedStepsBetweenMaxAndMin = (motor2MaxSpeed-motor2MinSpeed)*10000;
+        long motor1MilliSecondsToTraverseTheSpeedSteps = motor1CountdownTimer.getTimerDuration();
+        long motor2MilliSecondsToTraverseTheSpeedSteps = motor2CountdownTimer.getTimerDuration();
+        float motor1StepsPerMilliSecond = motor1NumberOfSpeedStepsBetweenMaxAndMin/motor1MilliSecondsToTraverseTheSpeedSteps;
+        float motor2StepsPerMilliSecond = motor2NumberOfSpeedStepsBetweenMaxAndMin/motor2MilliSecondsToTraverseTheSpeedSteps;
         /*
         println("case 0 started, motor1FunctionIsCurrentlyIncreasingSpeed= " + motor1FunctionIsCurrentlyIncreasingSpeed);
         println("motor1StepsPerMilliSecond= " + motor1StepsPerMilliSecond);
@@ -504,32 +525,82 @@ void calculateNextSpeedBasedOnFadingFunction(){
       }
       }
       
-      currentValuesFromGuiOrFunction = (int)motor1CurrentSpeed + "," + (int)motor1Direction+"," + (int)motor2CurrentSpeed + "," + (int)motor2Direction;
+      currentValuesFromGuiOrFunction = (int)motor2CurrentSpeed + "," + (int)motor2Direction+"," + (int)motor1CurrentSpeed + "," + (int)motor1Direction;
       //println("currentValuesFromGuiOrFunction: " + currentValuesFromGuiOrFunction);
       sendMotorParametersOverSerial();
       break;
- }
+ 
+   case 1:
+   
+   motor1CurrentSpeed = motor1SpeedSlider.getValue();
+   motor2CurrentSpeed = motor2SpeedSlider.getValue();
+   currentValuesFromGuiOrFunction = (int)motor2CurrentSpeed + "," + (int)motor2Direction+"," + (int)motor1CurrentSpeed + "," + (int)motor1Direction;
+   println("case 0 finished sending motor parameters: " + (int)motor1CurrentSpeed + "," + (int)motor1Direction+"," + (int)motor2CurrentSpeed + "," + (int)motor2Direction);
+   sendMotorParametersOverSerial();
+   break;
+}
 }
 
 
 void updateScreen(){
- background(255, 255, 255);
+  background(255, 255, 255);
+  image(headline, windowSizeWidth/2-300, 20);
  setCurrentVariablesInLabelText();
+ /*
   motor1CurrentParametersTextLabel1.draw(this);
   motor1CurrentParametersTextLabel2.draw(this);
   motor1CurrentParametersTextLabel3.draw(this);
   motor2CurrentParametersTextLabel1.draw(this);
   motor2CurrentParametersTextLabel2.draw(this);
   motor2CurrentParametersTextLabel3.draw(this);
+  */
 }
 
 void setCurrentVariablesInLabelText(){
+  if (advancedGui == true){
+  fadingFunctionId = 0;
+  motor1Range.setVisible(true);
+  motor2Range.setVisible(true);
+  motor1TimeSlider.setVisible(true);
+  motor2TimeSlider.setVisible(true);
+  motor1SpeedSlider.setVisible(false);
+  motor2SpeedSlider.setVisible(false);
+  
+  //textlables
+  motor1CurrentParametersTextLabel1.setText("Speed: " + motor1CurrentSpeed).setVisible(true) ;
+  motor1CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor1Direction)).setVisible(true);                 
+  motor1CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished/1000 + " seconds.").setVisible(true) ;                   
+  motor2CurrentParametersTextLabel1.setText("Speed: " + motor2CurrentSpeed).setVisible(true) ;          
+  motor2CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor2Direction)).setVisible(true) ;                 
+  motor2CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished/1000 + " seconds.").setVisible(true) ;
+
+
+}
+else {
+  fadingFunctionId = 1;
+  motor1Range.setVisible(false);
+  motor2Range.setVisible(false);
+  motor1TimeSlider.setVisible(false);
+  motor2TimeSlider.setVisible(false);
+  motor1SpeedSlider.setVisible(true);
+  motor2SpeedSlider.setVisible(true);
+  //textlables
+  motor1CurrentParametersTextLabel1.setText("Speed: " + motor1CurrentSpeed).setVisible(true) ;
+  motor1CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor1Direction)).setVisible(true);                 
+  motor1CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setVisible(false) ;                   
+  motor2CurrentParametersTextLabel1.setText("Speed: " + motor2CurrentSpeed).setVisible(true) ;          
+  motor2CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor2Direction)).setVisible(true) ;                 
+  motor2CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setVisible(false) ;
+
+}
+  /*
 motor1CurrentParametersTextLabel1.setText("Speed: " + motor1CurrentSpeed);
 motor1CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor1Direction));
 motor1CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished/1000 + " seconds.");
 motor2CurrentParametersTextLabel1.setText("Speed: " + motor2CurrentSpeed);
 motor2CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor2Direction));
 motor2CurrentParametersTextLabel3.setText( "Time until max or min: " + motor2TimeUntilFinished/1000 + " seconds.");
+*/
 }
 
 
@@ -547,9 +618,10 @@ if (motor2ChangeDirectionButton.getState()  == false){
 else motor2Direction = 0;
 
 
-if (advancedModeToggleSwitch.getState() == true{
+if (advancedModeToggleSwitch.getState() == true){
 advancedGui = true;
 updateGuiAtModeChange();
+}
 else {
 advancedGui = false;
 updateGuiAtModeChange();
@@ -557,7 +629,7 @@ updateGuiAtModeChange();
 
 
 
-}
+
 if (startStopDrawing.getState()  == true){
   motor1CurrentState = true;
   motor2CurrentState = true;
@@ -659,10 +731,10 @@ void controlEvent(ControlEvent theControlEvent) {
 
 String getCurrentDirection(int currentDirectionInt){
   if (currentDirectionInt==0){
-     return "Counter Clockwise";
+     return "Clockwise";
       }
   else if (currentDirectionInt == 1){
-    return "Clockwise";
+    return "Counter Clockwise";
 }
   else return "Confusion is present, direction unknown";
 }
