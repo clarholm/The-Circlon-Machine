@@ -19,8 +19,10 @@ int windowSizeWidth;
 int windowSizeHeight;
 int xOffsetLeft = 50;
 int xOffsetRight = 50;
-int yOffsetTop = 50;
+int yOffsetTop = 50+167;
 int yOffsetBottom = 50;
+boolean advancedGui = false;
+PImage headline;
 
 //Sliders & Range controllers gui preferences
 int sliderHeight = 40;
@@ -30,6 +32,8 @@ Range motor1Range;
 Range motor2Range;
 Slider motor1TimeSlider;
 Slider motor2TimeSlider;
+Slider motor1SpeedSlider;
+Slider motor2SpeedSlider;
 
 //Text label
 int textLabelRowSpacing = 17;
@@ -51,8 +55,11 @@ Toggle motor2ChangeDirectionButton;
 boolean motor2ChangeDirectionButtonStatus;
 Toggle startStopDrawing;
 Toggle pauseDrawing;
+Toggle advancedModeToggleSwitch;
 int buttonHeight = 20;
 int startButtonHeight = 100;
+int advancedModeToggleSwitchWidth = 60;
+int advancedModeToggleSwitchHeight = 20;
 
 //Motor Control Parameters
 int motor1MinSpeed = 0;
@@ -98,6 +105,8 @@ void setup() {
   windowSizeWidth = displayWidth-100;
   windowSizeHeight = displayHeight-100;
   
+  headline = loadImage("circlon-gui-bgnd.jpg");
+  
   //create a p5 controller object
   cp5 = new ControlP5(this);
   
@@ -118,7 +127,9 @@ void setup() {
              .setNumberOfTickMarks(2500-600)
              .showTickMarks(false) 
              .snapToTickMarks(true)
-             ; 
+             .setVisible(false) 
+             ;
+             
   //Create slider for motor two speed control
   motor2Range = cp5.addRange("Motor 2 Speed")
                // disable broadcasting since setRange and setRangeValues will trigger an event
@@ -136,7 +147,32 @@ void setup() {
              .setNumberOfTickMarks(2500-600)
              .showTickMarks(false) 
              .snapToTickMarks(true)
+             .setVisible(false) 
              ;
+             
+//speed sliders for basic mode
+
+      motor1SpeedSlider = cp5.addSlider("Motor 1 Speed")
+      .setPosition(xOffsetLeft,yOffsetTop+buttonHeight+sliderHorizontalSpacing)
+      .setSize(windowSizeWidth/2-xOffsetLeft-100, sliderHeight)
+     .setRange(200,2500)
+     .setValue(200)
+     .setColorForeground(color(153, 0, 51))
+     .setColorBackground(color(255, 153, 128))
+     .setColorLabel(color(0,0,0))
+     .setVisible(true) 
+     ;
+     
+      motor2SpeedSlider = cp5.addSlider("Motor 2 Speed")
+     .setPosition((windowSizeWidth/2+xOffsetRight), yOffsetTop+buttonHeight+sliderHorizontalSpacing)
+     .setSize((windowSizeWidth/2-xOffsetRight-100), sliderHeight)
+     .setRange(200,2500)
+     .setValue(200)
+     .setColorForeground(color(153, 0, 51))
+     .setColorBackground(color(255, 153, 128))
+     .setColorLabel(color(0,0,0))
+     .setVisible(true) 
+     ;
              
   motor1TimeSlider = cp5.addSlider("Motor 1 Time")
      .setPosition(xOffsetLeft,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
@@ -149,6 +185,7 @@ void setup() {
       .setNumberOfTickMarks(200-1)
       .showTickMarks(false) 
       .snapToTickMarks(true)
+      .setVisible(false) 
      ;
   
    motor2TimeSlider = cp5.addSlider("Motor 2 Time")
@@ -162,6 +199,7 @@ void setup() {
      .setNumberOfTickMarks(200-1)
       .showTickMarks(false) 
       .snapToTickMarks(true)
+      .setVisible(false) 
     ;
 
 
@@ -250,6 +288,19 @@ void setup() {
     .setColorActive(color(153, 0, 51)) 
     .setColorLabel(color(0,0,0))
     .setLabelVisible(false)
+    .setVisible(false);
+     ;
+     
+    advancedModeToggleSwitch = cp5.addToggle("Advanced Mode")
+     .setPosition(windowSizeWidth-xOffsetLeft-advancedModeToggleSwitchWidth,windowSizeHeight-yOffsetBottom-advancedModeToggleSwitchHeight)
+     .setSize(advancedModeToggleSwitchWidth,advancedModeToggleSwitchHeight)
+     .setValue(0)
+     .setColorForeground(color(153, 0, 51))
+    .setColorBackground(color(255, 153, 128))
+    .setColorActive(color(153, 0, 51)) 
+    .setColorLabel(color(0,0,0))
+    .setMode(ControlP5.SWITCH)
+    .setLabelVisible(true)
      ;
      
   
@@ -280,7 +331,7 @@ serialTransmissionTimer = CountdownTimerService.getNewCountdownTimer(this).confi
 
 void draw() {
   
-  
+image(headline, windowSizeWidth/2-300, 20);
 //debug start
 //motor1CurrentSpeed = motor1MaxSpeed;
 //motor2CurrentSpeed = motor2MaxSpeed;
@@ -293,10 +344,44 @@ updateScreen();
 
 }
 
-void updateValuesFromRangeSliders(){
+void updateGuiAtModeChange(){
+if (advancedGui == true){
+  motor1Range.setVisible(true);
+  motor2Range.setVisible(true);
+  motor1TimeSlider.setVisible(true);
+  motor2TimeSlider.setVisible(true);
+  motor1SpeedSlider.setVisible(false);
+  motor1SpeedSlider.setVisible(false);
+  
+  //textlables
+  motor1CurrentParametersTextLabel1.setText("Speed: " + motor1CurrentSpeed).setLabelVisible(true) ;
+  motor1CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor1Direction).setLabelVisible(true);                 
+  motor1CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setLabelVisible(true) ;                   
+  motor2CurrentParametersTextLabel1.setText("Speed: " + motor2CurrentSpeed).setLabelVisible(true) ;          
+  motor2CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor2Direction).setLabelVisible(true) ;                 
+  motor2CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setLabelVisible(true) ;
 
 
 }
+else {
+  motor1Range.setVisible(false);
+  motor2Range.setVisible(false);
+  motor1TimeSlider.setVisible(false);
+  motor2TimeSlider.setVisible(false);
+  motor1SpeedSlider.setVisible(true);
+  motor1SpeedSlider.setVisible(true);
+  //textlables
+  motor1CurrentParametersTextLabel1.setText("Speed: " + motor1CurrentSpeed).setLabelVisible(true) ;
+  motor1CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor1Direction).setLabelVisible(true);                 
+  motor1CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setLabelVisible(false) ;                   
+  motor2CurrentParametersTextLabel1.setText("Speed: " + motor2CurrentSpeed).setLabelVisible(true) ;          
+  motor2CurrentParametersTextLabel2.setText( "Direction: " + getCurrentDirection(motor2Direction).setLabelVisible(true) ;                 
+  motor2CurrentParametersTextLabel3.setText( "Time until max or min: " + motor1TimeUntilFinished + " seconds.").setLabelVisible(false) ;
+
+}
+
+}
+
 
 void serialEvent( Serial myPort) {
     try {
@@ -462,6 +547,17 @@ if (motor2ChangeDirectionButton.getState()  == false){
 else motor2Direction = 0;
 
 
+if (advancedModeToggleSwitch.getState() == true{
+advancedGui = true;
+updateGuiAtModeChange();
+else {
+advancedGui = false;
+updateGuiAtModeChange();
+}
+
+
+
+}
 if (startStopDrawing.getState()  == true){
   motor1CurrentState = true;
   motor2CurrentState = true;
