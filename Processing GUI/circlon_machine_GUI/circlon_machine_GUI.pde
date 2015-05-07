@@ -46,7 +46,7 @@ Textlabel motor2CurrentParametersTextLabel2;
 Textlabel motor2CurrentParametersTextLabel3;
 
 Textlabel currentMotorStateLabel;
-Textlabel pauseMotorLabel;
+Textlabel instructionsLabel;
 
 //Buttons
 Toggle motor1ChangeDirectionButton;
@@ -121,8 +121,8 @@ void setup() {
              .setRangeValues(600,800)
              // after the initialization we turn broadcast back on again
              .setBroadcast(true)
-             .setColorForeground(color(153, 0, 51))
-             .setColorBackground(color(255, 153, 128))
+             .setColorForeground(color(153, 153, 153))
+             .setColorBackground(color(255, 51, 51))
              .setColorLabel(color(0,0,0))
              .setNumberOfTickMarks(2500-600)
              .showTickMarks(false) 
@@ -141,8 +141,8 @@ void setup() {
              .setRangeValues(600,800)
              // after the initialization we turn broadcast back on again
              .setBroadcast(true)
-             .setColorForeground(color(153, 0, 51))
-             .setColorBackground(color(255, 153, 128))
+             .setColorForeground(color(153, 153, 153))
+             .setColorBackground(color(255, 51, 51))
              .setColorLabel(color(0,0,0))
              .setNumberOfTickMarks(2500-600)
              .showTickMarks(false) 
@@ -157,8 +157,8 @@ void setup() {
       .setSize(windowSizeWidth/2-xOffsetLeft-100, sliderHeight)
      .setRange(200,2500)
      .setValue(200)
-     .setColorForeground(color(153, 0, 51))
-     .setColorBackground(color(255, 153, 128))
+     .setColorForeground(color(153, 153, 153))
+     .setColorBackground(color(255, 51, 51))
      .setColorLabel(color(0,0,0))
      .setVisible(true) 
      ;
@@ -168,8 +168,8 @@ void setup() {
      .setSize((windowSizeWidth/2-xOffsetRight-100), sliderHeight)
      .setRange(200,2500)
      .setValue(200)
-     .setColorForeground(color(153, 0, 51))
-     .setColorBackground(color(255, 153, 128))
+     .setColorForeground(color(153, 153, 153))
+     .setColorBackground(color(255, 51, 51))
      .setColorLabel(color(0,0,0))
      .setVisible(true) 
      ;
@@ -179,8 +179,8 @@ void setup() {
      .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
      .setRange(1,200)
      .setValue(30)
-     .setColorForeground(color(153, 0, 51))
-     .setColorBackground(color(255, 153, 128))
+     .setColorForeground(color(153, 153, 153))
+     .setColorBackground(color(255, 51, 51))
      .setColorLabel(color(0,0,0))
       .setNumberOfTickMarks(200-1)
       .showTickMarks(false) 
@@ -193,8 +193,8 @@ void setup() {
     .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
     .setRange(1,200)
     .setValue(30)
-    .setColorForeground(color(153, 0, 51))
-    .setColorBackground(color(255, 153, 128))
+    .setColorForeground(color(153, 153, 153))
+    .setColorBackground(color(255, 51, 51))
     .setColorLabel(color(0,0,0))
      .setNumberOfTickMarks(200-1)
       .showTickMarks(false) 
@@ -255,9 +255,9 @@ void setup() {
      .setPosition(xOffsetLeft,yOffsetTop)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,buttonHeight)
      .setValue(0)
-     .setColorForeground(color(153, 0, 51))
-     .setColorBackground(color(255, 153, 128))
-     .setColorActive(color(153, 0, 51)) 
+     .setColorForeground(color(153, 153, 153))
+     .setColorBackground(color(255, 51, 51))
+     .setColorActive(color(153, 153, 153)) 
      .setColorLabel(color(0,0,0))
      ;
 
@@ -265,9 +265,9 @@ void setup() {
      .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,buttonHeight)
      .setValue(0)
-     .setColorForeground(color(153, 0, 51))
-    .setColorBackground(color(255, 153, 128))
-    .setColorActive(color(153, 0, 51)) 
+     .setColorForeground(color(153, 153, 153))
+    .setColorBackground(color(255, 51, 51))
+    .setColorActive(color(153, 153, 153)) 
     .setColorLabel(color(0,0,0))
      ;
 //Motors on or off     
@@ -275,9 +275,9 @@ void setup() {
      .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,startButtonHeight)
      .setValue(0)
-     .setColorForeground(color(153, 0, 51))
-    .setColorBackground(color(255, 153, 128))
-    .setColorActive(color(153, 0, 51)) 
+     .setColorForeground(color(153, 153, 153))
+    .setColorBackground(color(255, 51, 51))
+    .setColorActive(color(153, 153, 153)) 
     .setColorLabel(color(0,0,0))
     .setLabelVisible(false)
      ;
@@ -285,9 +285,9 @@ void setup() {
      .setPosition(xOffsetRight,yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,startButtonHeight)
      .setValue(0)
-     .setColorForeground(color(153, 0, 51))
-    .setColorBackground(color(255, 153, 128))
-    .setColorActive(color(153, 0, 51)) 
+     .setColorForeground(color(153, 153, 153))
+    .setColorBackground(color(255, 51, 51))
+    .setColorActive(color(153, 153, 153)) 
     .setColorLabel(color(0,0,0))
     .setLabelVisible(false)
     .setVisible(false);
@@ -297,9 +297,9 @@ void setup() {
      .setPosition(windowSizeWidth-xOffsetLeft-advancedModeToggleSwitchWidth,windowSizeHeight-yOffsetBottom-advancedModeToggleSwitchHeight)
      .setSize(advancedModeToggleSwitchWidth,advancedModeToggleSwitchHeight)
      .setValue(0)
-     .setColorForeground(color(153, 0, 51))
-    .setColorBackground(color(255, 153, 128))
-    .setColorActive(color(153, 0, 51)) 
+     .setColorForeground(color(153, 153, 153))
+    .setColorBackground(color(255, 51, 51))
+    .setColorActive(color(153, 153, 153)) 
     .setColorLabel(color(0,0,0))
     .setMode(ControlP5.SWITCH)
     .setLabelVisible(true)
@@ -313,12 +313,12 @@ void setup() {
     .setFont(createFont("Arial",25))
                     ;
 
-  pauseMotorLabel = cp5.addTextlabel("resetTimers")
-    .setText( "Reset Timers")
-    .setPosition(xOffsetRight, yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing+startButtonHeight)
+  instructionsLabel = cp5.addTextlabel("Instructions")
+    .setText( "INSTRUKTIONER \n\n1. Kontrollera att spetsen på pennan är indragen. \n2. Placera ett nytt papper i maskinen och fäst det med magneterna. \n3. Välj riktning på motorerna med knapparna högst upp. \n4. Välj hastighet på motorerna genom att dra i hastighetsreglagen.\n5. Fäll ut spetsen på pennan. \n6. Tryck på startknappen. \n7. När du är nöjd tryck på stop. \n8. Fäll in spetsen på pennan. \n9. Vill du ha den stämplad med en snygg jenslabs stämpel, be Jens att stämpla.  ")
+    .setPosition(xOffsetRight, yOffsetTop + 2*sliderHeight + 3*sliderHorizontalSpacing+3*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
     .setColorValue(color(0,0,0))
-    .setFont(createFont("Arial",25))
-    .setVisible(false)
+    .setFont(createFont("Arial",20))
+    
                     ;
 
 
