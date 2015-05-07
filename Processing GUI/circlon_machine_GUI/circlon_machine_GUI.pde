@@ -99,7 +99,10 @@ void setup() {
   myPort.bufferUntil('\n');
   
   //Setup window based on screensize
-  size(displayWidth-100, displayHeight-100);
+  size(displayWidth, displayHeight);
+    if (frame != null) {
+    frame.setResizable(true);
+  }
   //Set background clour to white.
   background(255, 255, 255);
   windowSizeWidth = displayWidth-100;
