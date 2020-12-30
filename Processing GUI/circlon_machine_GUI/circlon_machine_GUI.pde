@@ -86,13 +86,14 @@ boolean motor2timerFinished = false;
 void setup() {
   
   //Create serial communications port
-  println(Serial.list());
-  String portName = Serial.list()[1];
+ println(Serial.list());
+ String portName = Serial.list()[0];
   myPort = new Serial(this, portName, 9600);
   myPort.bufferUntil('\n');
   
   //Setup window based on screensize
-  size(displayWidth-100, displayHeight-100);
+  size(2000, 1000);
+  //size(displayWidth-100, displayHeight-100);
   //Set background clour to white.
   background(255, 255, 255);
   windowSizeWidth = displayWidth-100;
@@ -470,14 +471,14 @@ if (startStopDrawing.getState()  == true){
   currentMotorStateLabel.setText("Press to Stop");
   if (motor1LastTimerValue != motor1TimeSlider.getValue()){
   motor1LastTimerValue = motor1TimeSlider.getValue();
-  motor1CountdownTimer.reset();
+  motor1CountdownTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
   motor1CountdownTimer.configure(100, (int)(motor1TimeSlider.getValue()*1000)).start();
   
   }
 
   if (motor2LastTimerValue != motor2TimeSlider.getValue()){
       motor2LastTimerValue = motor2TimeSlider.getValue();
-      motor2CountdownTimer.reset();
+      motor2CountdownTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
       motor2CountdownTimer.configure(100, (int)(motor2TimeSlider.getValue()*1000)).start();
        
   }
@@ -489,8 +490,8 @@ else if(startStopDrawing.getState()  == false){
   getMotorParametersFromGui();
   motor1LastTimerValue =0;
   motor2LastTimerValue =0;
-  motor1CountdownTimer.reset();
-  motor2CountdownTimer.reset();
+  motor1CountdownTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
+  motor2CountdownTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
 }
 
 }
@@ -518,18 +519,18 @@ void onFinishEvent(int timerId) {
   switch (timerId) {
     case 0:
     motor1timerFinished = true;
-    motor1CountdownTimer.reset();
+    motor1CountdownTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
       motor1LastTimerValue =0;
       
       break;
     case 1:
-    motor2CountdownTimer.reset();
+    motor2CountdownTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
        motor2LastTimerValue =0;
        motor2timerFinished = true;
 
       break;
     case 2:
-    serialTransmissionTimer.reset();
+    serialTransmissionTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
     transmissionTimerFinished = true;
     break;
     
@@ -570,7 +571,3 @@ String getCurrentDirection(int currentDirectionInt){
 }
   else return "Confusion is present, direction unknown";
 }
-
-
-
-
