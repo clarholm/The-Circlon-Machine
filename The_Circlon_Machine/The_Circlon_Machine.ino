@@ -19,45 +19,30 @@
 //  would also run with a constant speed of 1200 and clockwise.
 
 #include <AccelStepper.h>
-#include <AFMotor.h>
 
-AF_Stepper motor1(200, 1);
-AF_Stepper motor2(200, 2);
+AccelStepper stepper1(AccelStepper::DRIVER, 1, 0);
+AccelStepper stepper2(AccelStepper::DRIVER, 3, 2);
+AccelStepper stepper3(AccelStepper::DRIVER, 5, 4);
+#define MS1 8
+#define MS2 9
+#define EN 10
 
-//Perparing to wrap the motors in use the Accel stepper objects.
-void forwardstep1() {
-  motor1.onestep(FORWARD, INTERLEAVE);
-}
-void backwardstep1() {
-  motor1.onestep(BACKWARD, INTERLEAVE);
-}
-// wrappers for the second motor!
-void forwardstep2() {
-  motor2.onestep(FORWARD, INTERLEAVE);
-}
-void backwardstep2() {
-  motor2.onestep(BACKWARD, INTERLEAVE);
-}
-
-
-// Motor shield has two motor ports, now we'll wrap them in an AccelStepper object
-AccelStepper stepper1(forwardstep1, backwardstep1);
-AccelStepper stepper2(forwardstep2, backwardstep2);
-
-int enableDisableMotormovementsPin = 2;
+int enableDisableMotormovementsPin = 11;
 int stopMotors;
 int motor1Direction = HIGH;
 int motor2Direction = HIGH;
+int motor3Direction = HIGH;
 long motor1Speed = 0;
 long motor2Speed = 0;
+long motor3Speed = 0;
 boolean debug2 = false;
-boolean debug3 = false;
-float motorMultiplier = 0.1; //needed to be able to run at relly low speeds
+boolean debug3 = true;
+float motorMultiplier = 1; //needed to be able to run at relly low speeds
 String inputString = "";         // a string to hold incoming data
 int inputStringToInt = 0;
 
 //Variables for reading from serialport
-const int NUMBER_OF_FIELDS = 4; // how many comma separated fields we expect
+const int NUMBER_OF_FIELDS = 6; // how many comma separated fields we expect
 int fieldIndex = 0;            // the current field being received
 int values[NUMBER_OF_FIELDS];   // array holding values for all the fields
 boolean dataAvailable = false;
@@ -72,22 +57,29 @@ void setup()
   establishContact();
   // reserve 200 bytes for the inputString:
   inputString.reserve(200);
-  stepper1.setMaxSpeed(400);
-  stepper2.setMaxSpeed(400);
+  stepper1.setMaxSpeed(800);
+  stepper2.setMaxSpeed(800);
+  stepper3.setMaxSpeed(800);
   pinMode(enableDisableMotormovementsPin, INPUT_PULLUP);
-
+  pinMode(MS1, OUTPUT);
+  pinMode(MS2, OUTPUT);
+  pinMode(EN, OUTPUT);
+  digitalWrite(EN, LOW);
+  digitalWrite(MS1, HIGH); //Pull MS1, and MS2 high to set logic to 1/8th microstep resolution
+  digitalWrite(MS2, HIGH);
 }
 
 void loop()
 {
   //check if motors are enabled.
   stopMotors = digitalRead(enableDisableMotormovementsPin);
-  if (stopMotors == LOW || (motor1Speed==0 && motor2Speed == 0)) {
+  if (stopMotors == LOW || (motor1Speed==0 && motor2Speed == 0 && motor3Speed == 0)) {
     stopAllMotors();
   }
  checkSerialForData();
  runStepper1(motor1Speed, motor1Direction);
  runStepper2(motor2Speed, motor2Direction);
+ runStepper3(motor3Speed, motor3Direction);
 }
 
 
@@ -126,6 +118,8 @@ void checkSerialForData(){
       motor1Direction = values[1];
       motor2Speed = values[2];
       motor2Direction = values[3];
+      motor3Speed = values[4];
+      motor3Direction = values[5];
       if (debug3 == true) {
         Serial.println("Variables set!");
         printDebug2();
@@ -196,6 +190,24 @@ void runStepper2(int motorSpeed, int motorDirection) {
   }
 }
 
+void runStepper3(int motorSpeed, int motorDirection) {
+
+  if (debug2 == true) {
+    Serial.println("######### Triggered from run stepper 3 ############");
+  }
+  if (motorDirection == 0) {
+
+    motorSpeed = -motorSpeed;
+  }
+  stepper3.setSpeed(motorSpeed * motorMultiplier);
+  stepper3.runSpeed();
+  if (debug2 == true) {
+    Serial.print("Run Stepper function for motor 2");
+    Serial.print(", at speed: ");
+    Serial.println(motorSpeed * motorMultiplier);
+  }
+}
+
 void printDebug2() {
   Serial.println("######### printDebug Start ############");
   Serial.println("Reading Values. ");
@@ -235,7 +247,7 @@ void stopAllMotors() {
     stopAllMotors();
     }
     */
-  while (stopMotors == LOW || (motor1Speed==0 && motor2Speed == 0)){
+  while (stopMotors == LOW || (motor1Speed==0 && motor2Speed == 0 && motor3Speed == 0)){
       if (debug2 == true) {
     Serial.println("In stop motors While loop");
     Serial.print("stopMotors state: ");

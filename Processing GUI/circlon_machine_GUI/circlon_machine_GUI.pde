@@ -92,7 +92,7 @@ void setup() {
   myPort.bufferUntil('\n');
   
   //Setup window based on screensize
-  size(2000, 1000);
+  size(1800, 1000);
   //size(displayWidth-100, displayHeight-100);
   //Set background clour to white.
   background(255, 255, 255);
@@ -109,8 +109,8 @@ void setup() {
              .setPosition(xOffsetLeft,yOffsetTop+buttonHeight+sliderHorizontalSpacing)
              .setSize(windowSizeWidth/2-xOffsetLeft-100, sliderHeight)
              .setHandleSize(sliderHandleSize)
-             .setRange(600,2500)
-             .setRangeValues(600,800)
+             .setRange(10,2500)
+             .setRangeValues(10,800)
              // after the initialization we turn broadcast back on again
              .setBroadcast(true)
              .setColorForeground(color(153, 0, 51))
@@ -127,7 +127,7 @@ void setup() {
              .setPosition((windowSizeWidth/2+xOffsetRight), yOffsetTop+buttonHeight+sliderHorizontalSpacing)
              .setSize((windowSizeWidth/2-xOffsetRight-100), sliderHeight)
              .setHandleSize(sliderHandleSize)
-             .setRange(600,2500)
+             .setRange(10,2500)
              .setRangeValues(600,800)
              // after the initialization we turn broadcast back on again
              .setBroadcast(true)
