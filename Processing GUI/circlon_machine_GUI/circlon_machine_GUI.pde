@@ -28,8 +28,12 @@ int sliderHandleSize = 20;
 int sliderHorizontalSpacing = 20;
 Range motor1Range;
 Range motor2Range;
+Range motor3Range;
+Range motor4Range;
 Slider motor1TimeSlider;
 Slider motor2TimeSlider;
+Slider motor3TimeSlider;
+Slider motor4TimeSlider;
 
 //Text label
 int textLabelRowSpacing = 17;
@@ -41,6 +45,14 @@ Textlabel motor2CurrentParametersTextLabel1;
 Textlabel motor2CurrentParametersTextLabel2;
 Textlabel motor2CurrentParametersTextLabel3;
 
+Textlabel motor3CurrentParametersTextLabel1;
+Textlabel motor3CurrentParametersTextLabel2;
+Textlabel motor3CurrentParametersTextLabel3;
+
+Textlabel motor4CurrentParametersTextLabel1;
+Textlabel motor4CurrentParametersTextLabel2;
+Textlabel motor4CurrentParametersTextLabel3;
+
 Textlabel currentMotorStateLabel;
 Textlabel pauseMotorLabel;
 
@@ -49,6 +61,10 @@ Toggle motor1ChangeDirectionButton;
 boolean motor1ChangeDirectionButtonStatus;
 Toggle motor2ChangeDirectionButton;
 boolean motor2ChangeDirectionButtonStatus;
+Toggle motor3ChangeDirectionButton;
+boolean motor3ChangeDirectionButtonStatus;
+Toggle motor4ChangeDirectionButton;
+boolean motor4ChangeDirectionButtonStatus;
 Toggle startStopDrawing;
 Toggle pauseDrawing;
 int buttonHeight = 20;
@@ -57,22 +73,40 @@ int startButtonHeight = 100;
 //Motor Control Parameters
 int motor1MinSpeed = 0;
 int motor2MinSpeed = 0;
+int motor3MinSpeed = 0;
+int motor4MinSpeed = 0;
 int motor1MaxSpeed = 0;
 int motor2MaxSpeed = 0;
+int motor3MaxSpeed = 0;
+int motor4MaxSpeed = 0;
 long motor1TimeUntilFinished = 10;
 long motor2TimeUntilFinished = 10;
+long motor3TimeUntilFinished = 10;
+long motor4TimeUntilFinished = 10;
 float motor1CurrentSpeed = 0;
 float motor2CurrentSpeed = 0;
+float motor3CurrentSpeed = 0;
+float motor4CurrentSpeed = 0;
 int motor1CurrentTime = 0;
 int motor2CurrentTime = 0;
+int motor3CurrentTime = 0;
+int motor4CurrentTime = 0;
 float motor1LastTimerValue = 0;
 float motor2LastTimerValue = 0;
+float motor3LastTimerValue = 0;
+float motor4LastTimerValue = 0;
 boolean motor1CurrentState;
 boolean motor2CurrentState;
+boolean motor3CurrentState;
+boolean motor4CurrentState;
 int motor1Direction = 0; //0 = counter clockwise, 1 = clockwise
 int motor2Direction = 0; //0 = counter clockwise, 1 = clockwise
+int motor3Direction = 0; //0 = counter clockwise, 1 = clockwise
+int motor4Direction = 0; //0 = counter clockwise, 1 = clockwise
 CountdownTimer motor1CountdownTimer;
 CountdownTimer motor2CountdownTimer;
+CountdownTimer motor3CountdownTimer;
+CountdownTimer motor4CountdownTimer;
 String runMotorsString; //contains speed parameters
 String currentValuesFromGuiOrFunction; //contains the parameters the GUI is currently set to.
 
@@ -80,8 +114,12 @@ String currentValuesFromGuiOrFunction; //contains the parameters the GUI is curr
 int fadingFunctionId = 0;
 boolean motor1FunctionIsCurrentlyIncreasingSpeed = true;
 boolean motor2FunctionIsCurrentlyIncreasingSpeed = true;
+boolean motor3FunctionIsCurrentlyIncreasingSpeed = true;
+boolean motor4FunctionIsCurrentlyIncreasingSpeed = true;
 boolean motor1timerFinished = false;
 boolean motor2timerFinished = false;
+boolean motor3timerFinished = false;
+boolean motor4timerFinished = false;
 
 void setup() {
   
@@ -138,7 +176,40 @@ void setup() {
              .showTickMarks(false) 
              .snapToTickMarks(true)
              ;
-             
+    motor3Range = cp5.addRange("Motor 3 Speed")
+               // disable broadcasting since setRange and setRangeValues will trigger an event
+             .setBroadcast(false) 
+             .setPosition(xOffsetLeft,yOffsetTop+buttonHeight+sliderHorizontalSpacing)
+             .setSize(windowSizeWidth/2-xOffsetLeft-100, sliderHeight)
+             .setHandleSize(sliderHandleSize)
+             .setRange(10,2500)
+             .setRangeValues(10,800)
+             // after the initialization we turn broadcast back on again
+             .setBroadcast(true)
+             .setColorForeground(color(153, 0, 51))
+             .setColorBackground(color(255, 153, 128))
+             .setColorLabel(color(0,0,0))
+             .setNumberOfTickMarks(2500-600)
+             .showTickMarks(false) 
+             .snapToTickMarks(true)
+             ; 
+    motor4Range = cp5.addRange("Motor 4 Speed")
+               // disable broadcasting since setRange and setRangeValues will trigger an event
+             .setBroadcast(false) 
+             .setPosition(xOffsetLeft,yOffsetTop+buttonHeight+sliderHorizontalSpacing)
+             .setSize(windowSizeWidth/2-xOffsetLeft-100, sliderHeight)
+             .setHandleSize(sliderHandleSize)
+             .setRange(10,2500)
+             .setRangeValues(10,800)
+             // after the initialization we turn broadcast back on again
+             .setBroadcast(true)
+             .setColorForeground(color(153, 0, 51))
+             .setColorBackground(color(255, 153, 128))
+             .setColorLabel(color(0,0,0))
+             .setNumberOfTickMarks(2500-600)
+             .showTickMarks(false) 
+             .snapToTickMarks(true)
+             ; 
   motor1TimeSlider = cp5.addSlider("Motor 1 Time")
      .setPosition(xOffsetLeft,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
@@ -164,7 +235,30 @@ void setup() {
       .showTickMarks(false) 
       .snapToTickMarks(true)
     ;
-
+ motor3TimeSlider = cp5.addSlider("Motor 3 Time")
+     .setPosition(xOffsetLeft,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
+     .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
+     .setRange(1,200)
+     .setValue(30)
+     .setColorForeground(color(153, 0, 51))
+     .setColorBackground(color(255, 153, 128))
+     .setColorLabel(color(0,0,0))
+      .setNumberOfTickMarks(200-1)
+      .showTickMarks(false) 
+      .snapToTickMarks(true)
+     ;
+ motor3TimeSlider = cp5.addSlider("Motor 3 Time")
+     .setPosition(xOffsetLeft,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
+     .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
+     .setRange(1,200)
+     .setValue(30)
+     .setColorForeground(color(153, 0, 51))
+     .setColorBackground(color(255, 153, 128))
+     .setColorLabel(color(0,0,0))
+      .setNumberOfTickMarks(200-1)
+      .showTickMarks(false) 
+      .snapToTickMarks(true)
+     ;
 
   motor1CurrentParametersTextLabel1 = cp5.addTextlabel("motor1Label1")
                     .setText("Speed: " + motor1CurrentSpeed)
@@ -209,7 +303,46 @@ void setup() {
                     .setFont(createFont("Arial",15))
                     ;
 
-
+  motor3CurrentParametersTextLabel1 = cp5.addTextlabel("motor3Label1")
+                    .setText("Speed: " + motor3CurrentSpeed)
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
+                    .setColorValue(color(0,0,0))
+                    .setFont(createFont("Arial",15))
+                    ;
+                    
+  motor3CurrentParametersTextLabel2 = cp5.addTextlabel("motor3Label2")
+                    .setText( "Direction: " + getCurrentDirection(motor3Direction))
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
+                    .setColorValue(color(0,0,0))
+                    .setFont(createFont("Arial",15))
+                    ;
+                    
+  motor3CurrentParametersTextLabel3 = cp5.addTextlabel("motor3Label3")
+                    .setText( "Time until max or min: " + motor3TimeUntilFinished + " seconds.")
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+2*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
+                    .setColorValue(color(0,0,0))
+                    .setFont(createFont("Arial",15))
+                    ;
+   motor4CurrentParametersTextLabel1 = cp5.addTextlabel("motor4Label1")
+                    .setText("Speed: " + motor4CurrentSpeed)
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
+                    .setColorValue(color(0,0,0))
+                    .setFont(createFont("Arial",15))
+                    ;
+                    
+  motor4CurrentParametersTextLabel2 = cp5.addTextlabel("motor4Label2")
+                    .setText( "Direction: " + getCurrentDirection(motor4Direction))
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
+                    .setColorValue(color(0,0,0))
+                    .setFont(createFont("Arial",15))
+                    ;
+                    
+  motor4CurrentParametersTextLabel3 = cp5.addTextlabel("motor4Label3")
+                    .setText( "Time until max or min: " + motor4TimeUntilFinished + " seconds.")
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+2*textLabelRowSpacing+buttonHeight+sliderHorizontalSpacing)
+                    .setColorValue(color(0,0,0))
+                    .setFont(createFont("Arial",15))
+                    ;    
 //Toggle Switches
 //Motor Direction
    motor1ChangeDirectionButton = cp5.addToggle("Click to change direction of motor 1")
@@ -223,6 +356,26 @@ void setup() {
      ;
 
    motor2ChangeDirectionButton = cp5.addToggle("Click to change direction of motor 2")
+     .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop)
+     .setSize(windowSizeWidth/2-xOffsetLeft-100,buttonHeight)
+     .setValue(0)
+     .setColorForeground(color(153, 0, 51))
+    .setColorBackground(color(255, 153, 128))
+    .setColorActive(color(153, 0, 51)) 
+    .setColorLabel(color(0,0,0))
+     ;
+
+   motor3ChangeDirectionButton = cp5.addToggle("Click to change direction of motor 3")
+     .setPosition(xOffsetLeft,yOffsetTop)
+     .setSize(windowSizeWidth/2-xOffsetLeft-100,buttonHeight)
+     .setValue(0)
+     .setColorForeground(color(153, 0, 51))
+     .setColorBackground(color(255, 153, 128))
+     .setColorActive(color(153, 0, 51)) 
+     .setColorLabel(color(0,0,0))
+     ;
+
+   motor4ChangeDirectionButton = cp5.addToggle("Click to change direction of motor 4")
      .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,buttonHeight)
      .setValue(0)
@@ -273,6 +426,8 @@ void setup() {
 
 motor1CountdownTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, (int)(motor1TimeSlider.getValue()*1000));
 motor2CountdownTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, (int)(motor2TimeSlider.getValue()*1000));
+motor3CountdownTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, (int)(motor3TimeSlider.getValue()*1000));
+motor4CountdownTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, (int)(motor4TimeSlider.getValue()*1000));
 serialTransmissionTimer = CountdownTimerService.getNewCountdownTimer(this).configure(100, timeBetweenSerialTransmissions);
   noStroke();
 
@@ -353,14 +508,14 @@ serialTransmissionTimer.start();
 
 void getMotorParametersFromGui(){
 
-if (motor1CurrentState == true && motor2CurrentState == true){
+if (motor1CurrentState == true && motor2CurrentState == true && motor3CurrentState == true && motor4CurrentState == true){
 calculateNextSpeedBasedOnFadingFunction();
-//currentValuesFromGuiOrFunction = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction); 
+//currentValuesFromGuiOrFunction = ((int)motor1CurrentSpeed+","+(int)motor1Direction+","+(int)motor2CurrentSpeed+","+(int)motor2Direction,"+(int)motor3CurrentSpeed+","+(int)motor3Direction,"+(int)motor4CurrentSpeed+","+(int)motor4Direction); 
 }
 
 
 else if (motor1CurrentState == false && motor2CurrentState == false){
-currentValuesFromGuiOrFunction = "0,0,0,0";
+currentValuesFromGuiOrFunction = "0,0,0,0,0,0,0,0";
 }
 sendMotorParametersOverSerial();  
 }
@@ -370,13 +525,23 @@ void calculateNextSpeedBasedOnFadingFunction(){
     motor1MaxSpeed = (int)motor1Range.getHighValue();
     motor2MinSpeed = (int)motor2Range.getLowValue();
     motor2MaxSpeed = (int)motor2Range.getHighValue();
+    motor3MinSpeed = (int)motor2Range.getLowValue();
+    motor3MaxSpeed = (int)motor2Range.getHighValue();
+    motor4MinSpeed = (int)motor2Range.getLowValue();
+    motor4MaxSpeed = (int)motor2Range.getHighValue();
   int motor1NumberOfSpeedStepsBetweenMaxAndMin = (motor1MaxSpeed-motor1MinSpeed)*10000;
   //println("motor1NumberOfSpeedStepsBetweenMaxAndMin: " + motor1NumberOfSpeedStepsBetweenMaxAndMin);
   int motor2NumberOfSpeedStepsBetweenMaxAndMin = (motor2MaxSpeed-motor2MinSpeed)*10000;
+  int motor3NumberOfSpeedStepsBetweenMaxAndMin = (motor3MaxSpeed-motor3MinSpeed)*10000;
+  int motor4NumberOfSpeedStepsBetweenMaxAndMin = (motor4MaxSpeed-motor4MinSpeed)*10000;
   long motor1MilliSecondsToTraverseTheSpeedSteps = motor1CountdownTimer.getTimerDuration();
   long motor2MilliSecondsToTraverseTheSpeedSteps = motor2CountdownTimer.getTimerDuration();
+  long motor3MilliSecondsToTraverseTheSpeedSteps = motor3CountdownTimer.getTimerDuration();
+  long motor4MilliSecondsToTraverseTheSpeedSteps = motor4CountdownTimer.getTimerDuration();
   float motor1StepsPerMilliSecond = motor1NumberOfSpeedStepsBetweenMaxAndMin/motor1MilliSecondsToTraverseTheSpeedSteps;
   float motor2StepsPerMilliSecond = motor2NumberOfSpeedStepsBetweenMaxAndMin/motor2MilliSecondsToTraverseTheSpeedSteps;
+  float motor3StepsPerMilliSecond = motor3NumberOfSpeedStepsBetweenMaxAndMin/motor3MilliSecondsToTraverseTheSpeedSteps;
+  float motor4StepsPerMilliSecond = motor4NumberOfSpeedStepsBetweenMaxAndMin/motor4MilliSecondsToTraverseTheSpeedSteps;
  switch (fadingFunctionId) {
     case 0:
         /*
