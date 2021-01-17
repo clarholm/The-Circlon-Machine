@@ -57,9 +57,9 @@ void setup()
   establishContact();
   // reserve 200 bytes for the inputString:
   inputString.reserve(200);
-  stepper1.setMaxSpeed(800);
-  stepper2.setMaxSpeed(800);
-  stepper3.setMaxSpeed(800);
+  stepper1.setMaxSpeed(2000);
+  stepper2.setMaxSpeed(2000);
+  stepper3.setMaxSpeed(2000);
   pinMode(enableDisableMotormovementsPin, INPUT_PULLUP);
   pinMode(MS1, OUTPUT);
   pinMode(MS2, OUTPUT);
