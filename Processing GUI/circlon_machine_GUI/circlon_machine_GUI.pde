@@ -148,8 +148,8 @@ void setup() {
              .setPosition(xOffsetLeft,yOffsetTop+buttonHeight+sliderHorizontalSpacing)
              .setSize(windowSizeWidth/2-xOffsetLeft-100, sliderHeight)
              .setHandleSize(sliderHandleSize)
-             .setRange(10,2500)
-             .setRangeValues(10,800)
+             .setRange(1,1000)
+             .setRangeValues(5,5)
              // after the initialization we turn broadcast back on again
              .setBroadcast(true)
              .setColorForeground(color(153, 0, 51))
@@ -166,8 +166,8 @@ void setup() {
              .setPosition((windowSizeWidth/2+xOffsetRight), yOffsetTop+buttonHeight+sliderHorizontalSpacing)
              .setSize((windowSizeWidth/2-xOffsetRight-100), sliderHeight)
              .setHandleSize(sliderHandleSize)
-             .setRange(10,2500)
-             .setRangeValues(600,800)
+             .setRange(1,1000)
+             .setRangeValues(10,10)
              // after the initialization we turn broadcast back on again
              .setBroadcast(true)
              .setColorForeground(color(153, 0, 51))
@@ -183,8 +183,8 @@ void setup() {
              .setPosition(xOffsetLeft,yOffsetTop+buttonHeight+sliderHorizontalSpacing+secondRowX)
              .setSize(windowSizeWidth/2-xOffsetLeft-100, sliderHeight)
              .setHandleSize(sliderHandleSize)
-             .setRange(10,2500)
-             .setRangeValues(10,800)
+             .setRange(1,1000)
+             .setRangeValues(500,800)
              // after the initialization we turn broadcast back on again
              .setBroadcast(true)
              .setColorForeground(color(0, 0, 51))
@@ -200,14 +200,14 @@ void setup() {
              .setPosition((windowSizeWidth/2+xOffsetRight), yOffsetTop+buttonHeight+sliderHorizontalSpacing+secondRowX)
              .setSize((windowSizeWidth/2-xOffsetRight-100), sliderHeight)
              .setHandleSize(sliderHandleSize)
-             .setRange(10,2500)
-             .setRangeValues(600,800)
+             .setRange(1,1000)
+             .setRangeValues(5,5)
              // after the initialization we turn broadcast back on again
              .setBroadcast(true)
              .setColorForeground(color(153, 0, 51))
              .setColorBackground(color(255, 153, 128))
              .setColorLabel(color(0,0,0))
-             .setNumberOfTickMarks(2500-600)
+             .setNumberOfTickMarks(1000)
              .showTickMarks(false) 
              .snapToTickMarks(true)
              ;
@@ -306,7 +306,7 @@ void setup() {
 
   motor3CurrentParametersTextLabel1 = cp5.addTextlabel("motor3Label1")
                     .setText("Speed: " + motor3CurrentSpeed)
-                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+2*buttonHeight+2*sliderHorizontalSpacing+secondRowX)
+                    .setPosition(xOffsetLeft,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing+secondRowX)
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
                     ;
@@ -324,7 +324,7 @@ void setup() {
                     .setColorValue(color(0,0,0))
                     .setFont(createFont("Arial",15))
                     ;
-  motor4CurrentParametersTextLabel1 = cp5.addTextlabel("motor2Label1")
+  motor4CurrentParametersTextLabel1 = cp5.addTextlabel("motor4Label1")
                     .setText("Speed: " + motor2CurrentSpeed)
                     .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + 2*sliderHeight + 2*sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing+secondRowX)
                     .setColorValue(color(0,0,0))
@@ -516,7 +516,7 @@ calculateNextSpeedBasedOnFadingFunction();
 }
 
 
-else if (motor1CurrentState == false && motor2CurrentState == false){
+else if (motor1CurrentState == false && motor2CurrentState == false && motor3CurrentState == false && motor4CurrentState == false){
 currentValuesFromGuiOrFunction = "0,0,0,0,0,0,0,0";
 }
 sendMotorParametersOverSerial();  
@@ -618,7 +618,8 @@ void calculateNextSpeedBasedOnFadingFunction(){
       }
       }
       
-      currentValuesFromGuiOrFunction = (int)motor1CurrentSpeed + "," + (int)motor1Direction+"," + (int)motor2CurrentSpeed + "," + (int)motor2Direction + (int)motor3CurrentSpeed + "," + (int)motor3Direction+"," + (int)motor4CurrentSpeed + "," + (int)motor4Direction;
+//      currentValuesFromGuiOrFunction = (int)motor1CurrentSpeed + "," + (int)motor1Direction+"," + (int)motor2CurrentSpeed + "," + (int)motor2Direction + "," + (int)motor3CurrentSpeed + "," + (int)motor3Direction+"," + (int)motor4CurrentSpeed + "," + (int)motor4Direction;
+      currentValuesFromGuiOrFunction = (int)motor1CurrentSpeed + "," + (int)motor1Direction+"," + (int)motor2CurrentSpeed + "," + (int)motor2Direction + "," + (int)motor3CurrentSpeed + "," + (int)motor3Direction;
       //println("currentValuesFromGuiOrFunction: " + currentValuesFromGuiOrFunction);
       sendMotorParametersOverSerial();
       break;
@@ -751,6 +752,12 @@ void onTickEvent(int timerId, long timeLeftUntilFinish) {
      motor2TimeUntilFinished = timeLeftUntilFinish;
       break;
     case 2:
+      motor3TimeUntilFinished = timeLeftUntilFinish;
+      break;
+    case 3:
+     motor4TimeUntilFinished = timeLeftUntilFinish;
+      break;
+    case 4:
 
       break;
     }
@@ -772,6 +779,18 @@ void onFinishEvent(int timerId) {
 
       break;
     case 2:
+    motor3timerFinished = true;
+    motor3CountdownTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
+      motor3LastTimerValue =0;
+      
+      break;
+    case 3:
+    motor4CountdownTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
+       motor4LastTimerValue =0;
+       motor4timerFinished = true;
+
+      break;
+    case 4:
     serialTransmissionTimer.reset(CountdownTimer.StopBehavior.STOP_AFTER_INTERVAL);
     transmissionTimerFinished = true;
     break;
@@ -799,7 +818,22 @@ void controlEvent(ControlEvent theControlEvent) {
     motor2MaxSpeed = int(theControlEvent.getController().getArrayValue(1));
     //Debug
   }
-
+  if(theControlEvent.isFrom(motor3Range)) {
+    // min and max values are stored in an array.
+    // access this array with controller().arrayValue().
+    // min is at index 0, max is at index 1.
+    motor3MinSpeed = int(theControlEvent.getController().getArrayValue(0));
+    motor3MaxSpeed = int(theControlEvent.getController().getArrayValue(1));
+    //Debug
+  }
+    if(theControlEvent.isFrom(motor4Range)) {
+    // min and max values are stored in an array.
+    // access this array with controller().arrayValue().
+    // min is at index 0, max is at index 1.
+    motor4MinSpeed = int(theControlEvent.getController().getArrayValue(0));
+    motor4MaxSpeed = int(theControlEvent.getController().getArrayValue(1));
+    //Debug
+  }
 }
 
 
