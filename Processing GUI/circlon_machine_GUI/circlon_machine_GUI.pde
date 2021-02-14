@@ -214,7 +214,7 @@ void setup() {
   motor1TimeSlider = cp5.addSlider("Motor 1 Time")
      .setPosition(xOffsetLeft,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
-     .setRange(1,200)
+     .setRange(1,500)
      .setValue(30)
      .setColorForeground(color(153, 0, 51))
      .setColorBackground(color(255, 153, 128))
@@ -227,7 +227,7 @@ void setup() {
    motor2TimeSlider = cp5.addSlider("Motor 2 Time")
     .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing)
     .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
-    .setRange(1,200)
+    .setRange(1,500)
     .setValue(30)
     .setColorForeground(color(153, 0, 51))
     .setColorBackground(color(255, 153, 128))
@@ -239,7 +239,7 @@ void setup() {
  motor3TimeSlider = cp5.addSlider("Motor 3 Time")
      .setPosition(xOffsetLeft,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing+secondRowX)
      .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
-     .setRange(1,200)
+     .setRange(1,500)
      .setValue(30)
      .setColorForeground(color(153, 0, 51))
      .setColorBackground(color(255, 153, 128))
@@ -251,7 +251,7 @@ void setup() {
    motor4TimeSlider = cp5.addSlider("Motor 4 Time")
     .setPosition(windowSizeWidth/2+xOffsetRight,yOffsetTop + sliderHeight + sliderHorizontalSpacing+buttonHeight+sliderHorizontalSpacing+secondRowX)
     .setSize(windowSizeWidth/2-xOffsetLeft-100,sliderHeight)
-    .setRange(1,200)
+    .setRange(1,500)
     .setValue(30)
     .setColorForeground(color(153, 0, 51))
     .setColorBackground(color(255, 153, 128))
@@ -499,7 +499,7 @@ if (val != null) {
 void sendMotorParametersOverSerial(){
 //println("in send function, transmissionTimerFinished = "+transmissionTimerFinished+ " arduinoHasProcessedSentParameters: " +arduinoHasProcessedSentParameters );
 if (transmissionTimerFinished == true && arduinoHasProcessedSentParameters == true){
-println("Just before sending function =" + currentValuesFromGuiOrFunction);
+//println("Just before sending function =" + currentValuesFromGuiOrFunction);
 myPort.write(currentValuesFromGuiOrFunction);
 arduinoHasProcessedSentParameters = true;
 transmissionTimerFinished = false;
